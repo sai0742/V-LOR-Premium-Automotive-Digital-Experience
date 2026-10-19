@@ -90,14 +90,18 @@ test("reduced motion keeps all content available", async ({ page }) => {
       .evaluate((e) => getComputedStyle(e).scrollBehavior),
   ).toBe("auto");
 });
-test("dual-ring cursor tracks the pointer and magnetizes CTAs", async ({
+test("drafting compass cursor tracks the pointer and magnetizes CTAs", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
   const cursor = page.locator(".cursor");
+  await page.mouse.move(500, 400);
   await expect(cursor).toBeVisible();
+  await expect(cursor.locator(".cursor-coordinates")).toHaveText(
+    "X 0500\nY 0400",
+  );
   expect(await cursor.locator(".cursor-dot, .cursor-ring").count()).toBe(2);
   expect(
     await page.evaluate(() => document.body.classList.contains("has-cursor")),
@@ -120,9 +124,9 @@ test("dual-ring cursor tracks the pointer and magnetizes CTAs", async ({
   });
   await expect(cursor).toHaveClass(/is-active/);
   await page.waitForFunction(() =>
-    (document.querySelector(".nav-cta") as HTMLElement).style.transform.includes(
-      "translate3d",
-    ),
+    (
+      document.querySelector(".nav-cta") as HTMLElement
+    ).style.transform.includes("translate3d"),
   );
 });
 test("magnetic swatches ease back to rest when the pointer leaves", async ({
@@ -195,7 +199,7 @@ test("anchor targets clear the sticky nav and hero art blends", async ({
   expect(top).toBeLessThanOrEqual(250);
   expect(
     await page
-      .locator(".hero-art > img")
+      .locator(".hero-art > .art-frame")
       .evaluate((el) => getComputedStyle(el).mixBlendMode),
   ).toBe("multiply");
   expect(

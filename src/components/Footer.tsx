@@ -1,8 +1,9 @@
-export default function Footer() {
+export default function Footer({ anatomy = false }: { anatomy?: boolean }) {
+  const home = anatomy ? "/" : "";
   return (
     <footer className="section footer">
       <div className="footer-top">
-        <a className="footer-brand" href="#top">
+        <a className="footer-brand" href={`${home}#top`}>
           VÉLORÉ
         </a>
         <p>
@@ -11,12 +12,13 @@ export default function Footer() {
           Independent spirit.
         </p>
         <nav aria-label="Footer navigation">
-          <a href="#collection">The collection</a>
-          <a href="#marque">The marque</a>
-          <a href="#journal">The journal</a>
-          <a href="#registry">The registry</a>
+          <a href={`${home}#collection`}>The collection</a>
+          <a href={`${home}#marque`}>The marque</a>
+          <a href={`${home}#journal`}>The journal</a>
+          <a href="/anatomy">The anatomy atelier</a>
+          <a href={`${home}#registry`}>The registry</a>
         </nav>
-        <a href="#top" className="back-top" aria-label="Back to top">
+        <a href={`${home}#top`} className="back-top" aria-label="Back to top">
           ↑
         </a>
       </div>

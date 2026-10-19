@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/anatomy", "destination": "/index.html" },
+    { "source": "/anatomy/", "destination": "/index.html" }
+  ]
+}
