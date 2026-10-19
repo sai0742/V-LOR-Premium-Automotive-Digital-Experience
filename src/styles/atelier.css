@@ -1,0 +1,690 @@
+/* The tactile layer — ink, tracing stock, pencil and machined brass. */
+:root {
+  --ink: #1a1817;
+  --red: #8c2d19;
+  --vermilion: #8c2d19;
+  --draft-muted: #706858;
+  --draft-line: #1a181727;
+  --serif: "Cormorant Garamond Variable", Georgia, serif;
+  --mono: "IBM Plex Mono", monospace;
+}
+::selection {
+  background: #8c2d1928;
+  color: var(--ink);
+}
+.svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.nav-anatomy-mark {
+  font-size: 12px;
+  margin-left: 3px;
+  color: var(--vermilion);
+}
+.navlinks a[aria-current="page"] {
+  color: var(--vermilion);
+}
+.navlinks a[aria-current="page"]::after {
+  width: 100%;
+}
+.nav.nav--atelier {
+  height: 72px;
+  box-shadow: 0 1px 0 var(--line);
+}
+.archive-view {
+  min-width: 0;
+}
+
+/* A real variable italic, not synthetic bold. The short opacity/blur swell
+   reads like wet ink settling into cotton stock without translating text. */
+@property --ink-weight {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 400;
+}
+.ink-reveal {
+  font-variation-settings: "wght" var(--ink-weight, 400);
+}
+.ink-reveal.ink-visible {
+  animation: ink-settle 1.55s cubic-bezier(0.2, 0.65, 0.25, 1) both;
+}
+@keyframes ink-settle {
+  0% {
+    opacity: 0.12;
+    filter: blur(3.5px);
+    --ink-weight: 300;
+    text-shadow: 0 0 5px currentColor;
+  }
+  36% {
+    opacity: 0.72;
+    filter: blur(0.65px);
+    --ink-weight: 560;
+    text-shadow: 0 0 1px currentColor;
+  }
+  72% {
+    opacity: 1;
+    filter: blur(0.12px);
+    --ink-weight: 420;
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    --ink-weight: 400;
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
+/* The full-colour plate, a live SVG pencil-edge pass and halftone print grain
+   share one geometry. Existing crop transforms remain on the images; parallax
+   lives on their frame, so material studies keep their deliberate crops. */
+.art-frame {
+  --ax: 0;
+  --ay: 0;
+  position: relative;
+  display: block;
+  isolation: isolate;
+  overflow: hidden;
+  transform: perspective(1200px) rotateX(calc(var(--ay) * -1.8deg))
+    rotateY(calc(var(--ax) * 2.5deg));
+  transition: transform 0.65s cubic-bezier(0.2, 0.7, 0.25, 1);
+}
+.art-frame .art-base {
+  display: block;
+  width: 100%;
+  opacity: 0.88;
+  filter: sepia(0.28) saturate(0.76) contrast(0.96);
+  transition:
+    filter 1.1s,
+    opacity 1.1s,
+    translate 0.8s;
+  translate: calc(var(--ax) * -4px) calc(var(--ay) * -3px);
+}
+.art-frame .art-sketch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  filter: url(#velore-pencil);
+  /* Keep the convolution's source-image boundary off the printed plate. */
+  mask-image:
+    linear-gradient(90deg, transparent, #000 2%, #000 98%, transparent),
+    linear-gradient(0deg, transparent, #000 2%, #000 98%, transparent);
+  mask-composite: intersect;
+  opacity: 0.52;
+  transition:
+    opacity 1.1s,
+    translate 0.8s;
+  translate: calc(var(--ax) * -4px) calc(var(--ay) * -3px);
+}
+.art-frame::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(#5a3c2366 0.55px, transparent 0.8px),
+    linear-gradient(120deg, #ab7d3c10, #f3d89d12);
+  background-size:
+    3px 3px,
+    100% 100%;
+  mix-blend-mode: multiply;
+  opacity: 0.2;
+  transition: opacity 1s;
+}
+.art-frame::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 30px #987a3d09;
+}
+@media (hover: hover) and (pointer: fine) {
+  .art-frame:hover .art-base,
+  a:focus-visible .art-frame .art-base {
+    opacity: 1;
+    filter: sepia(0) saturate(1) contrast(1);
+  }
+  .art-frame:hover .art-sketch,
+  a:focus-visible .art-frame .art-sketch {
+    opacity: 0;
+  }
+  .art-frame:hover::before {
+    opacity: 0.045;
+  }
+}
+.detail-image > .art-frame,
+.material-art > .art-frame {
+  width: 100%;
+  height: 100%;
+}
+.detail-image .art-base,
+.material-art .art-base {
+  height: 100%;
+  object-fit: cover;
+}
+.notebook-art .art-frame img {
+  object-fit: contain;
+}
+.hero-art > .art-frame {
+  overflow: visible;
+}
+
+/* Sheet 07 is a link, not a click handler on a decorative card. */
+.notebook-portal {
+  perspective: 1200px;
+  min-width: 0;
+}
+.notebook-art {
+  display: block;
+  padding-bottom: 25px;
+  transform: rotateZ(-4deg);
+  transform-style: preserve-3d;
+  transition:
+    transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.75s;
+}
+.notebook-art:hover,
+.notebook-art:focus-visible {
+  transform: rotateZ(-1deg) rotateX(2.5deg) translateY(-5px);
+  box-shadow: 5px 22px 40px #1a181724;
+}
+.notebook-art .handnote {
+  position: static;
+  display: block;
+  margin: 12px 0 8px;
+  font-size: clamp(21px, 2.1vw, 29px);
+}
+.notebook-art .paper-ref {
+  margin: 0;
+  color: var(--draft-muted);
+}
+.notebook-portal-caption {
+  display: block;
+  margin: 35px 0 0 5px;
+  font: 7px/1.8 var(--mono);
+  letter-spacing: 0.75px;
+  color: var(--draft-muted);
+}
+.notebook-portal-caption i {
+  color: var(--vermilion);
+  font-size: 15px;
+  font-style: normal;
+  margin-right: 7px;
+}
+.notebook-art .tape {
+  z-index: 4;
+  width: 105px;
+  height: 30px;
+  top: -14px;
+  background: none;
+  transform: rotateZ(6deg);
+  transform-style: preserve-3d;
+  transform-origin: 20% 50%;
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.25, 1);
+}
+.tape::before,
+.tape::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(95deg, #cdb98b9c, #e0cd9cc9 60%, #cbb782ab);
+  clip-path: polygon(
+    1% 0,
+    98% 3%,
+    96% 19%,
+    100% 36%,
+    96% 55%,
+    99% 73%,
+    96% 100%,
+    0 97%,
+    3% 76%,
+    0 55%,
+    3% 34%,
+    0 17%
+  );
+}
+.tape::after {
+  left: 65%;
+  right: -3px;
+  transform-origin: 0 50%;
+  transform: rotateY(0) translateZ(0.5px);
+  background: linear-gradient(90deg, #d7c596, #f0e3bf 72%, #cebb8d);
+  transition:
+    transform 0.7s,
+    filter 0.7s;
+}
+.notebook-art:hover .tape,
+.notebook-art:focus-visible .tape {
+  transform: rotateZ(8deg) rotateX(23deg) translateZ(15px);
+}
+.notebook-art:hover .tape::after,
+.notebook-art:focus-visible .tape::after {
+  transform: rotateY(-46deg) rotateZ(-4deg) translateZ(7px);
+  filter: drop-shadow(7px 5px 3px #4e3c2a38);
+}
+.notebook-portal-badge {
+  position: absolute;
+  z-index: 5;
+  right: 12px;
+  bottom: -20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 44px;
+  padding: 12px 17px;
+  color: var(--paper);
+  background: var(--ink);
+  font: 9px/1.5 var(--mono);
+  box-shadow: 3px 5px 14px #1a181726;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.45s,
+    visibility 0.45s,
+    background-color 0.35s;
+}
+.notebook-portal-badge > span {
+  color: #d7aa8a;
+  font-size: 16px;
+}
+.notebook-art:hover .notebook-portal-badge,
+.notebook-art:focus-visible .notebook-portal-badge {
+  opacity: 1;
+  visibility: visible;
+}
+.portal-corner {
+  position: absolute;
+  top: 13px;
+  right: 15px;
+  color: var(--vermilion);
+  font-size: 17px;
+  opacity: 0.55;
+  transition: opacity 0.3s;
+}
+.notebook-art:hover .portal-corner {
+  opacity: 1;
+}
+
+/* Archival paper unfolding between the two real history routes. */
+.paper-transition {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 30% 40% 30%;
+  perspective: 1400px;
+  pointer-events: auto;
+}
+.paper-fold {
+  position: relative;
+  background-color: #eee3cb;
+  background-image:
+    repeating-linear-gradient(0deg, #7e5a2a04 0 1px, transparent 1px 4px),
+    linear-gradient(100deg, #f6edda, #eadcc1);
+  box-shadow: 0 0 30px #41331e29;
+  backface-visibility: hidden;
+}
+.paper-fold-left {
+  transform-origin: 100% 50%;
+  border-right: 1px solid #91724830;
+}
+.paper-fold-right {
+  transform-origin: 0 50%;
+  border-left: 1px solid #91724830;
+  background-image: linear-gradient(80deg, #e9dbc0, #f6edda);
+}
+.paper-fold-centre {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  text-align: center;
+  color: var(--vermilion);
+  font: 9px/1.7 var(--mono);
+  letter-spacing: 2px;
+}
+.paper-transition-mark {
+  font: 100px/1 var(--serif);
+  border-top: 1px solid #8c2d1940;
+  border-bottom: 1px solid #8c2d1940;
+  padding: 10px 45px;
+}
+.paper-fold-centre i {
+  font: italic 33px/1.3 var(--serif);
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.paper-transition-folio {
+  margin-top: 20px;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+.paper-transition-cross {
+  position: absolute;
+  top: 8%;
+  left: 10%;
+  font: 20px var(--mono);
+}
+.is-fold .paper-fold-centre {
+  animation: paper-centre-in 0.42s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.is-fold .paper-fold-left {
+  animation: paper-left-in 0.42s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.is-fold .paper-fold-right {
+  animation: paper-right-in 0.42s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.is-unfold .paper-fold-centre {
+  animation: paper-centre-out 0.65s cubic-bezier(0.6, 0, 0.25, 1) both;
+}
+.is-unfold .paper-fold-left {
+  animation: paper-left-out 0.65s cubic-bezier(0.6, 0, 0.25, 1) both;
+}
+.is-unfold .paper-fold-right {
+  animation: paper-right-out 0.65s cubic-bezier(0.6, 0, 0.25, 1) both;
+}
+@keyframes paper-centre-in {
+  from {
+    transform: translateY(110%) rotateX(20deg);
+  }
+  to {
+    transform: translateY(0) rotateX(0);
+  }
+}
+@keyframes paper-left-in {
+  from {
+    transform: translateY(30%) rotateY(100deg);
+  }
+  to {
+    transform: translateY(0) rotateY(0);
+  }
+}
+@keyframes paper-right-in {
+  from {
+    transform: translateY(30%) rotateY(-100deg);
+  }
+  to {
+    transform: translateY(0) rotateY(0);
+  }
+}
+@keyframes paper-centre-out {
+  0%,
+  8% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    transform: translateY(-7%) scale(1.08);
+    opacity: 0;
+  }
+}
+@keyframes paper-left-out {
+  from {
+    transform: rotateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-45%) rotateY(-100deg);
+    opacity: 0;
+  }
+}
+@keyframes paper-right-out {
+  from {
+    transform: rotateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(45%) rotateY(100deg);
+    opacity: 0;
+  }
+}
+
+/* Crosshair / compass / loupe. The familiar magnetic pull is retained. */
+.cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+  display: none;
+  overflow: hidden;
+}
+body.has-cursor .cursor.is-live {
+  display: block;
+}
+body.has-cursor,
+body.has-cursor a,
+body.has-cursor button,
+body.has-cursor [data-loupe],
+body.has-cursor input[type="range"] {
+  cursor: none;
+}
+.cursor-dot,
+.cursor-ring,
+.cursor-coordinates {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+.cursor-dot {
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  transition: opacity 0.3s;
+}
+.cursor-dot svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.8;
+}
+.cursor-dot circle {
+  fill: var(--vermilion);
+  stroke: none;
+}
+.cursor-ring {
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+}
+.cursor-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.85;
+  filter: drop-shadow(0 0 1px #f7f0dfbb);
+}
+.cursor-compass {
+  transition:
+    opacity 0.35s,
+    transform 0.45s cubic-bezier(0.2, 0.7, 0.25, 1);
+}
+.cursor-ring .compass-orbit {
+  stroke-dasharray: 2 4;
+  opacity: 0.42;
+}
+.cursor-ring .compass-legs {
+  stroke-width: 1.15;
+}
+.cursor-ring .compass-accent {
+  stroke: var(--vermilion);
+}
+.cursor-ring .compass-pivot {
+  fill: var(--paper);
+  stroke: var(--vermilion);
+}
+.cursor.is-active .cursor-compass {
+  transform: rotate(-9deg) scale(1.1);
+}
+.cursor-ring .cursor-loupe {
+  opacity: 0;
+  transform: rotate(12deg) scale(0.65);
+  transition:
+    opacity 0.35s,
+    transform 0.45s cubic-bezier(0.2, 0.7, 0.25, 1);
+}
+.cursor-ring .loupe-glass {
+  fill: #f7f0df1f;
+  stroke-width: 0.5;
+}
+.cursor-ring .loupe-handle {
+  stroke-width: 1.2;
+}
+.cursor.is-loupe .cursor-compass {
+  opacity: 0;
+  transform: rotate(-25deg) scale(0.7);
+}
+.cursor.is-loupe .cursor-loupe {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+.cursor.is-loupe .cursor-dot {
+  opacity: 0;
+}
+.cursor-coordinates {
+  margin: 21px 0 0 30px;
+  padding: 2px 4px;
+  font: 8px/1.5 var(--mono);
+  letter-spacing: 0.3px;
+  white-space: pre;
+  color: var(--ink);
+  background: #f7f0dfb3;
+}
+[data-magnetic] {
+  will-change: transform;
+}
+
+@media (max-width: 860px) {
+  .nav {
+    height: 72px;
+    padding: 0 5%;
+    gap: 18px;
+  }
+  .nav-cta {
+    margin-left: auto;
+  }
+  .menu-toggle {
+    display: block;
+    border: 0;
+    background: none;
+    padding: 12px 0;
+    color: var(--ink);
+    font: 10px var(--mono);
+  }
+  .navlinks {
+    display: none;
+  }
+  .navlinks.open {
+    display: flex;
+    position: absolute;
+    inset: 100% 0 auto;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: 25px 6% 35px;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 20px 25px #17171512;
+    font-size: 20px;
+  }
+  .navlinks.open a {
+    padding: 10px 0;
+  }
+}
+@media (max-width: 640px) {
+  .notebook-portal-badge {
+    right: 0;
+    opacity: 1;
+    visibility: visible;
+    font-size: 8px;
+    padding-inline: 13px;
+  }
+  .notebook-portal-caption {
+    font-size: 6px;
+    letter-spacing: 0.6px;
+    margin-top: 30px;
+  }
+  .paper-transition {
+    grid-template-columns: 15% 70% 15%;
+  }
+  .paper-transition-folio {
+    font-size: 6px;
+    letter-spacing: 0.6px;
+  }
+  .paper-transition-mark {
+    font-size: 76px;
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .notebook-portal-badge {
+    opacity: 1;
+    visibility: visible;
+  }
+  .art-frame {
+    transform: none;
+  }
+}
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cursor {
+    display: none !important;
+  }
+  body.has-cursor,
+  body.has-cursor a,
+  body.has-cursor button,
+  body.has-cursor [data-loupe],
+  body.has-cursor input[type="range"] {
+    cursor: auto;
+  }
+  [data-magnetic] {
+    transform: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ink-reveal,
+  .ink-reveal.ink-visible {
+    opacity: 1;
+    filter: none;
+    animation: none !important;
+    --ink-weight: 400;
+  }
+  .art-frame,
+  .notebook-art,
+  .notebook-art:hover,
+  .notebook-art:focus-visible {
+    transform: none !important;
+  }
+  .art-frame .art-base,
+  .art-frame .art-sketch {
+    translate: none;
+  }
+  .notebook-art .tape,
+  .notebook-art:hover .tape,
+  .notebook-art:focus-visible .tape {
+    transform: rotateZ(6deg);
+  }
+  .notebook-art:hover .tape::after,
+  .notebook-art:focus-visible .tape::after {
+    transform: none;
+    filter: none;
+  }
+  .notebook-portal-badge {
+    opacity: 1;
+    visibility: visible;
+  }
+}

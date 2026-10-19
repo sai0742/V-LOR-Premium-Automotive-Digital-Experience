@@ -2,14 +2,30 @@ import { Label, Artwork } from "./Shared";
 export default function Notebook() {
   return (
     <section className="section notebook" id="journal">
-      <div className="notebook-art reveal">
-        <div className="tape" />
-        <Artwork
-          src="notebook"
-          alt="Supplied pencil development sketches with side profile, mirror studies and handwritten notes"
-        />
-        <span className="handnote">It always begins with a line.</span>
-        <span className="paper-ref">STUDIO NOTES / SHEET 07</span>
+      <div className="notebook-portal reveal">
+        <a
+          className="notebook-art"
+          href="/anatomy"
+          aria-label="Explore Technical Disassembly"
+        >
+          <div className="tape" aria-hidden="true" />
+          <Artwork
+            src="notebook"
+            alt="Supplied pencil development sketches with side profile, mirror studies and handwritten notes"
+          />
+          <span className="handnote">It always begins with a line.</span>
+          <span className="paper-ref">STUDIO NOTES / SHEET 07</span>
+          <span className="notebook-portal-badge" data-magnetic>
+            Explore Technical Disassembly <span aria-hidden="true">→</span>
+          </span>
+          <span className="portal-corner" aria-hidden="true">
+            ↗
+          </span>
+        </a>
+        <span className="notebook-portal-caption">
+          <i aria-hidden="true">+</i> AN OPEN INVITATION TO LOOK BENEATH THE
+          SURFACE.
+        </span>
       </div>
       <div className="notebook-copy reveal">
         <Label>04 — The designer’s notebook</Label>

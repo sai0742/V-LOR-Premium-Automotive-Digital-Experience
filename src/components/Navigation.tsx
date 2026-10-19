@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Arrow } from "./Shared";
-export default function Navigation() {
+export default function Navigation({ anatomy = false }: { anatomy?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLElement>(null);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 30);
+    fn();
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
@@ -35,8 +36,15 @@ export default function Navigation() {
     return () => document.removeEventListener("keydown", key);
   }, [open]);
   return (
-    <header className={scrolled ? "nav scrolled" : "nav"}>
-      <a href="#top" className="brand" aria-label="Véloré home">
+    <header
+      className={`nav${scrolled ? " scrolled" : ""}${anatomy ? " nav--atelier" : ""}`}
+    >
+      <a
+        href={anatomy ? "/#top" : "#top"}
+        className="brand"
+        aria-label="Véloré home"
+        onClick={() => setOpen(false)}
+      >
         <img src="/images/emblem-mark.webp" alt="" />
         <span>VÉLORÉ</span>
       </a>
@@ -52,12 +60,33 @@ export default function Navigation() {
           ["Craftsmanship", "craftsmanship"],
           ["Journal", "journal"],
         ].map(([name, id]) => (
-          <a key={id} href={`#${id}`} data-magnetic onClick={() => setOpen(false)}>
+          <a
+            key={id}
+            href={`${anatomy ? "/" : ""}#${id}`}
+            data-magnetic
+            onClick={() => setOpen(false)}
+          >
             {name}
           </a>
         ))}
+        <a
+          href="/anatomy"
+          data-magnetic
+          aria-current={anatomy ? "page" : undefined}
+          onClick={() => setOpen(false)}
+        >
+          Anatomy{" "}
+          <span className="nav-anatomy-mark" aria-hidden="true">
+            +
+          </span>
+        </a>
       </nav>
-      <a className="nav-cta" href="#registry" data-magnetic>
+      <a
+        className="nav-cta"
+        href={anatomy ? "/#registry" : "#registry"}
+        data-magnetic
+        onClick={() => setOpen(false)}
+      >
         The registry <Arrow />
       </a>
       <button

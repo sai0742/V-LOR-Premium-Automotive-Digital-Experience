@@ -12,13 +12,14 @@
     "format": "prettier --write src tests *.ts *.json index.html"
   },
   "dependencies": {
-    "@fontsource/cormorant-garamond": "^5.2.8",
+    "@fontsource-variable/cormorant-garamond": "^5.3.0",
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.56.0",
     "@sparticuz/chromium": "^153.0.0",

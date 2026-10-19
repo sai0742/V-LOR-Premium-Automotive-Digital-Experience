@@ -1,20 +1,14 @@
 import { useEffect, useRef } from "react";
 
-const MAGNET_SELECTOR = "[data-magnetic]";
-const PULL = 10; // px, maximum magnetic travel in each axis
-
+const PULL = 10;
 type Magnet = { tx: number; ty: number; cx: number; cy: number };
 
 /**
- * Dual-ring magnetic cursor.
- *
- * A fast inner dot and a lazier outer ring trail the pointer; elements marked
- * `data-magnetic` (navigation, swatches, CTAs) are gently pulled toward the
- * pointer while hovered and ease back to rest on leave.
- *
- * Fallbacks: the layer is only mounted for fine pointers (mouse/trackpad) and
- * is fully disabled under `prefers-reduced-motion`, leaving the native cursor
- * and untouched transforms on touch devices and motion-sensitive visitors.
+ * An architect's crosshair and trailing drafting compass. Gallery artwork and
+ * individual assemblies turn it into a loupe. Coordinates are live CSS-pixel
+ * drafting coordinates. Event-delegated magnets survive SPA route changes.
+ * The rAF sleeps at rest; coarse pointers, keyboard use and reduced motion
+ * retain the native cursor. No pointer-follow state is rendered through React.
  */
 export default function MagneticCursor() {
   const root = useRef<HTMLDivElement>(null);
@@ -22,18 +16,16 @@ export default function MagneticCursor() {
   useEffect(() => {
     const node = root.current;
     if (!node) return;
-    const dot = node.querySelector<HTMLElement>(".cursor-dot");
-    const ring = node.querySelector<HTMLElement>(".cursor-ring");
-    if (!dot || !ring) return;
-
-    const fine = window.matchMedia("(pointer: fine)");
-    const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
-
+    const crosshair = node.querySelector<HTMLElement>(".cursor-dot")!;
+    const compass = node.querySelector<HTMLElement>(".cursor-ring")!;
+    const coordinates = node.querySelector<HTMLElement>(".cursor-coordinates")!;
+    const fine = matchMedia("(pointer: fine)");
+    const calm = matchMedia("(prefers-reduced-motion: reduce)");
     let enabled = false;
+    let visible = false;
     let raf = 0;
-    let seen = false;
-    let px = window.innerWidth / 2;
-    let py = window.innerHeight / 2;
+    let px = innerWidth / 2;
+    let py = innerHeight / 2;
     let dx = px;
     let dy = py;
     let rx = px;
@@ -42,95 +34,131 @@ export default function MagneticCursor() {
     const magnets = new Map<HTMLElement, Magnet>();
 
     const tick = () => {
-      dx += (px - dx) * 0.38;
-      dy += (py - dy) * 0.38;
-      rx += (px - rx) * 0.16;
-      ry += (py - ry) * 0.16;
-      dot.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)`;
-      ring.style.transform = `translate3d(${rx.toFixed(2)}px, ${ry.toFixed(2)}px, 0)`;
+      raf = 0;
+      dx += (px - dx) * 0.62;
+      dy += (py - dy) * 0.62;
+      rx += (px - rx) * 0.21;
+      ry += (py - ry) * 0.21;
+      crosshair.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)`;
+      compass.style.transform = `translate3d(${rx.toFixed(2)}px, ${ry.toFixed(2)}px, 0)`;
+      coordinates.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)`;
+      let moving = Math.abs(px - rx) + Math.abs(py - ry) > 0.15;
       magnets.forEach((m, el) => {
+        if (!el.isConnected) {
+          magnets.delete(el);
+          return;
+        }
         m.cx += (m.tx - m.cx) * 0.18;
         m.cy += (m.ty - m.cy) * 0.18;
-        if (m.tx === 0 && m.ty === 0 && Math.abs(m.cx) < 0.05 && Math.abs(m.cy) < 0.05) {
-          m.cx = 0;
-          m.cy = 0;
-          if (el.style.transform) el.style.transform = "";
+        if (!m.tx && !m.ty && Math.abs(m.cx) + Math.abs(m.cy) < 0.05) {
+          m.cx = m.cy = 0;
+          el.style.transform = "";
         } else {
           el.style.transform = `translate3d(${m.cx.toFixed(2)}px, ${m.cy.toFixed(2)}px, 0)`;
+          moving ||= Math.abs(m.tx - m.cx) + Math.abs(m.ty - m.cy) > 0.05;
         }
       });
-      raf = requestAnimationFrame(tick);
+      if (moving && enabled) raf = requestAnimationFrame(tick);
     };
-
+    const schedule = () => {
+      if (!raf && enabled) raf = requestAnimationFrame(tick);
+    };
+    const show = (on: boolean) => {
+      visible = on && enabled;
+      node.classList.toggle("is-live", visible);
+      document.body.classList.toggle("has-cursor", visible);
+    };
+    const release = () => {
+      hovered = null;
+      magnets.forEach((m) => {
+        m.tx = m.ty = 0;
+      });
+      node.classList.remove("is-active", "is-loupe");
+      schedule();
+    };
     const refresh = () => {
-      const on = fine.matches && !calm.matches;
-      if (on === enabled) return;
-      enabled = on;
-      document.body.classList.toggle("has-cursor", on);
-      node.classList.toggle("is-live", on);
-      if (on) {
-        raf = requestAnimationFrame(tick);
-      } else {
+      enabled = fine.matches && !calm.matches;
+      if (!enabled) {
         cancelAnimationFrame(raf);
-        node.classList.remove("is-active");
-        hovered = null;
+        raf = 0;
+        release();
+        show(false);
         magnets.forEach((m, el) => {
-          m.tx = 0;
-          m.ty = 0;
-          m.cx = 0;
-          m.cy = 0;
+          m.tx = m.ty = m.cx = m.cy = 0;
           el.style.transform = "";
         });
       }
     };
-
+    const targetAt = (target: Element | null) => {
+      const el = target?.closest<HTMLElement>("[data-magnetic]") ?? null;
+      if (el !== hovered) {
+        release();
+        hovered = el;
+        node.classList.toggle("is-active", !!el);
+      }
+      node.classList.toggle("is-loupe", !!target?.closest("[data-loupe], img"));
+      if (el) {
+        let m = magnets.get(el);
+        if (!m) {
+          m = { tx: 0, ty: 0, cx: 0, cy: 0 };
+          magnets.set(el, m);
+        }
+        const box = el.getBoundingClientRect();
+        const clamp = (v: number) => Math.max(-PULL, Math.min(PULL, v));
+        m.tx = clamp((px - (box.left + box.width / 2 - m.cx)) * 0.28);
+        m.ty = clamp((py - (box.top + box.height / 2 - m.cy)) * 0.34);
+      }
+      schedule();
+    };
     const onMove = (e: PointerEvent) => {
       if (!enabled || e.pointerType !== "mouse") return;
       px = e.clientX;
       py = e.clientY;
-      if (!seen) {
-        seen = true;
+      if (!visible) {
         dx = rx = px;
         dy = ry = py;
       }
-      const target = e.target as Element | null;
-      const el = target?.closest
-        ? (target.closest(MAGNET_SELECTOR) as HTMLElement | null)
-        : null;
-      if (el !== hovered) {
-        hovered = el;
-        node.classList.toggle("is-active", !!el);
-      }
-      magnets.forEach((m) => {
-        m.tx = 0;
-        m.ty = 0;
-      });
-      if (hovered) {
-        const box = hovered.getBoundingClientRect();
-        const clamp = (v: number) => Math.max(-PULL, Math.min(PULL, v));
-        const m = magnets.get(hovered);
-        if (m) {
-          m.tx = clamp((px - (box.left + box.width / 2)) * 0.28);
-          m.ty = clamp((py - (box.top + box.height / 2)) * 0.34);
-        }
+      show(true);
+      coordinates.style.left = px > innerWidth - 95 ? "-95px" : "0px";
+      coordinates.style.top = py > innerHeight - 55 ? "-55px" : "0px";
+      coordinates.textContent = `X ${String(Math.round(px)).padStart(4, "0")}\nY ${String(Math.round(py)).padStart(4, "0")}`;
+      targetAt(e.target instanceof Element ? e.target : null);
+    };
+    const onScroll = () => {
+      if (enabled && visible) targetAt(document.elementFromPoint(px, py));
+    };
+    const onOut = (event: PointerEvent) => {
+      if (!event.relatedTarget) {
+        release();
+        show(false);
       }
     };
-
-    const register = () => {
-      magnets.clear();
-      document.querySelectorAll<HTMLElement>(MAGNET_SELECTOR).forEach((el) => {
-        magnets.set(el, { tx: 0, ty: 0, cx: 0, cy: 0 });
-      });
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Tab") {
+        release();
+        show(false);
+      }
+    };
+    const onBlur = () => {
+      release();
+      show(false);
     };
 
-    register();
     refresh();
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerout", onOut);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("blur", onBlur);
     fine.addEventListener("change", refresh);
     calm.addEventListener("change", refresh);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerout", onOut);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("blur", onBlur);
       fine.removeEventListener("change", refresh);
       calm.removeEventListener("change", refresh);
       document.body.classList.remove("has-cursor");
@@ -141,9 +169,33 @@ export default function MagneticCursor() {
   }, []);
 
   return (
-    <div className="cursor" ref={root} aria-hidden="true">
-      <span className="cursor-ring" />
-      <span className="cursor-dot" />
+    <div className="cursor cursor-drafting" ref={root} aria-hidden="true">
+      <span className="cursor-ring">
+        <svg className="cursor-compass" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="23" className="compass-orbit" />
+          <path
+            d="M18 49 L32 14 L46 49 M26 30 H38 M32 9 V18"
+            className="compass-legs"
+          />
+          <path d="M18 49 l-2 5 M46 49 l2 5 M13 32 H18 M46 32 H51" />
+          <path d="M10 25 A23 23 0 0 1 39 10" className="compass-accent" />
+          <circle cx="32" cy="14" r="2.5" className="compass-pivot" />
+        </svg>
+        <svg className="cursor-loupe" viewBox="0 0 64 64">
+          <circle cx="29" cy="28" r="18" />
+          <circle cx="29" cy="28" r="14" className="loupe-glass" />
+          <path d="M42 42 L55 55 M45 41 L57 53" className="loupe-handle" />
+          <path d="M20 28 H38 M29 19 V37" className="compass-accent" />
+          <path d="M17 24 A13 13 0 0 1 28 15" opacity=".4" />
+        </svg>
+      </span>
+      <span className="cursor-dot">
+        <svg viewBox="0 0 28 28">
+          <path d="M2 14 H10 M18 14 H26 M14 2 V10 M14 18 V26" />
+          <circle cx="14" cy="14" r="1.5" />
+        </svg>
+      </span>
+      <span className="cursor-coordinates">{"X 0000\nY 0000"}</span>
     </div>
   );
 }

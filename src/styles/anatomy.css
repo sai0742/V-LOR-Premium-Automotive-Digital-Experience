@@ -1,0 +1,1168 @@
+/* Plate 07 — a drafting table that remains in the native document flow. */
+.anatomy-scroll {
+  overflow-anchor: none;
+  height: 400vh;
+  position: relative;
+  color: var(--ink);
+}
+.anatomy-stage {
+  position: sticky;
+  top: 72px;
+  height: calc(100svh - 72px);
+  overflow: hidden;
+  isolation: isolate;
+  background: #f4eddd;
+}
+.draft-grid {
+  position: absolute;
+  inset: -28px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.72;
+  background-image:
+    linear-gradient(#80765e12 1px, transparent 1px),
+    linear-gradient(90deg, #80765e12 1px, transparent 1px),
+    linear-gradient(#80765e15 1px, transparent 1px),
+    linear-gradient(90deg, #80765e15 1px, transparent 1px),
+    radial-gradient(ellipse at 55% 52%, #fbf6e8 0, #f4eddd 70%);
+  background-size:
+    20px 20px,
+    20px 20px,
+    100px 100px,
+    100px 100px,
+    100% 100%;
+  background-position: 0 0;
+  will-change: transform;
+}
+.draft-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 52%,
+    transparent 10%,
+    #f4eddd55 60%,
+    #f4edddc9 100%
+  );
+}
+.draft-ruler {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.58;
+}
+.draft-ruler-top {
+  top: 0;
+  left: 5%;
+  right: 5%;
+  display: flex;
+  justify-content: space-between;
+  height: 17px;
+  padding-top: 7px;
+  background: repeating-linear-gradient(
+      90deg,
+      #71674f66 0 1px,
+      transparent 1px 10px
+    )
+    top / 100% 5px no-repeat;
+  font: 6px var(--mono);
+  letter-spacing: 0.3px;
+  color: var(--draft-muted);
+}
+.draft-ruler-side {
+  left: 0;
+  top: 30%;
+  bottom: 18%;
+  width: 7px;
+  background: repeating-linear-gradient(
+    0deg,
+    #71674f55 0 1px,
+    transparent 1px 10px
+  );
+}
+.draft-registration {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--vermilion);
+  stroke-width: 0.7;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.draft-registration .grid-drawing-line {
+  stroke: #8c2d1950;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  stroke-width: 0.5;
+}
+.draft-folio {
+  position: absolute;
+  left: 5.4%;
+  bottom: 21%;
+  font: 155px/0.8 var(--serif);
+  color: #8c2d1909;
+  pointer-events: none;
+}
+.atelier-breadcrumb {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 31px 5% 0;
+  color: var(--draft-muted);
+  font: 8px/1.6 var(--mono);
+  letter-spacing: 0.6px;
+}
+.atelier-breadcrumb a {
+  color: var(--ink);
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 25px;
+}
+.atelier-breadcrumb a > span {
+  color: var(--vermilion);
+  font-size: 16px;
+}
+.atelier-breadcrumb > span > i {
+  color: var(--vermilion);
+  font-style: normal;
+  padding: 0 8px;
+}
+.atelier-breadcrumb .atelier-status {
+  display: inline-flex;
+  align-items: center;
+  font-size: 7px;
+  letter-spacing: 0.8px;
+}
+.atelier-status > i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--vermilion);
+  border-radius: 50%;
+  margin-right: 8px;
+  padding: 0 !important;
+}
+.atelier-heading {
+  position: relative;
+  z-index: 8;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 25px;
+  margin: 27px 5% 0;
+  pointer-events: none;
+}
+.atelier-heading .eyebrow {
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: var(--vermilion);
+  margin-bottom: 14px;
+}
+.atelier-heading h1 {
+  font: 400 clamp(46px, 5.1vw, 80px)/0.95 var(--serif);
+  letter-spacing: -2.7px;
+  margin: 0;
+}
+.atelier-heading h1:focus {
+  outline: none;
+}
+.atelier-heading h1 em {
+  color: var(--vermilion);
+  white-space: nowrap;
+}
+.atelier-intro {
+  margin: 0 0 1px;
+  font-size: 11px;
+  line-height: 1.8;
+  max-width: 260px;
+  transition: opacity 0.2s;
+}
+.atelier-intro > span {
+  color: var(--draft-muted);
+}
+.has-selection .atelier-intro {
+  opacity: 0;
+}
+
+/* True CSS 3D planes: each is an independent hand-drawn SVG assembly. */
+.anatomy-camera {
+  position: absolute;
+  inset: 0;
+  perspective: 1500px;
+  perspective-origin: 50% 52%;
+  pointer-events: none;
+}
+.anatomy-scene {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: min(62vw, 860px, calc((100svh - 330px) * 1.75));
+  aspect-ratio: 870 / 400;
+  transform-style: preserve-3d;
+  transform: translate(-50%, -50%) rotateX(7deg) rotateY(-13deg) rotateZ(-4deg);
+  will-change: transform;
+}
+.blueprint-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  background: none;
+  color: var(--ink);
+  transform-style: preserve-3d;
+  pointer-events: none;
+  transition:
+    opacity 0.45s,
+    color 0.35s;
+  will-change: transform;
+}
+.blueprint-layer:focus-visible {
+  outline: 1px dashed var(--vermilion);
+  outline-offset: 5px;
+}
+.blueprint-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.blueprint-layer .part-ink {
+  pointer-events: visiblePainted;
+}
+.blueprint-svg .construction-line {
+  fill: none;
+  stroke: #8c2d1966;
+  stroke-width: 0.7;
+  stroke-dasharray: 7 4 1 4;
+}
+.blueprint-svg .dimension-line {
+  fill: none;
+  stroke: #8c2d1980;
+  stroke-width: 0.65;
+}
+.blueprint-svg .diagram-label {
+  font: 7px var(--mono);
+  letter-spacing: 0.9px;
+  fill: currentColor;
+  stroke: none;
+  opacity: 0.65;
+}
+.blueprint-svg .diagram-handnote {
+  font: italic 13px var(--serif);
+  fill: #8c2d19;
+  stroke: none;
+  opacity: 0.72;
+}
+.blueprint-svg .pencil-ghost {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.6;
+  opacity: 0.23;
+}
+.has-selection .blueprint-layer:not(.is-selected) {
+  opacity: 0.24;
+}
+.blueprint-layer.is-selected,
+.blueprint-layer.is-hovered,
+.blueprint-layer:focus-visible {
+  color: var(--vermilion);
+  opacity: 1;
+}
+.blueprint-shadow {
+  position: absolute;
+  left: 23%;
+  right: 20%;
+  top: 68%;
+  height: 8%;
+  border-radius: 50%;
+  background: #8673531c;
+  filter: blur(15px);
+  opacity: 1;
+  transform: rotate(-8deg);
+}
+.blueprint-leaders {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.blueprint-leaders path {
+  fill: none;
+  stroke: #63594799;
+  stroke-width: 0.65;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.blueprint-leaders circle {
+  fill: #f4eddd;
+  stroke: var(--vermilion);
+  stroke-width: 0.9;
+  opacity: 0;
+}
+.blueprint-leaders .is-selected path {
+  stroke: var(--vermilion);
+  stroke-width: 1.1;
+}
+.blueprint-leaders .is-selected circle {
+  fill: var(--vermilion);
+}
+
+/* Numbered annotations are keyboard-operable controls as well as labels. */
+.assembly-callouts {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+.assembly-callout {
+  position: absolute;
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  width: clamp(150px, 15vw, 208px);
+  border: none;
+  padding: 10px 0;
+  margin: 0;
+  background: linear-gradient(90deg, #f4edddf2 60%, #f4eddd88);
+  color: var(--ink);
+  text-align: left;
+  pointer-events: auto;
+}
+.callout-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-top: 1px solid #655b462f;
+  padding-top: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.callout-number {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  margin-top: -4px;
+  border: 1px solid #8c2d1985;
+  color: var(--vermilion);
+  border-radius: 50%;
+  font: 8px var(--mono);
+  transition:
+    color 0.3s,
+    background 0.3s;
+}
+.callout-content strong {
+  text-transform: uppercase;
+  font: 400 9px/1.65 var(--mono);
+  letter-spacing: 0.7px;
+}
+.callout-content > span {
+  font: 8px/1.75 var(--mono);
+  color: var(--draft-muted);
+  letter-spacing: 0.1px;
+}
+.callout-content small {
+  font: 6px var(--mono);
+  letter-spacing: 1px;
+  color: var(--vermilion);
+  margin-top: 2px;
+}
+.callout-content small i {
+  margin-left: 7px;
+  font-style: normal;
+  font-size: 11px;
+}
+.assembly-callout:hover .callout-number,
+.assembly-callout.is-selected .callout-number,
+.assembly-callout:focus-visible .callout-number {
+  background: var(--vermilion);
+  color: var(--paper);
+}
+.assembly-callout.is-selected .callout-content {
+  border-color: var(--vermilion);
+}
+.callout-coachwork {
+  left: 5%;
+  top: 29%;
+}
+.callout-powertrain {
+  left: 5%;
+  top: 49%;
+}
+.callout-suspension {
+  left: 5%;
+  top: 69%;
+}
+.callout-cockpit {
+  right: 5%;
+  top: 35%;
+}
+.callout-chassis {
+  right: 5%;
+  top: 58%;
+}
+.assembly-insight {
+  position: absolute;
+  z-index: 10;
+  bottom: 150px;
+  right: 5%;
+  width: 190px;
+  pointer-events: none;
+}
+.assembly-insight > .handnote {
+  font-size: 25px;
+  line-height: 1.1;
+  color: #8c5d47;
+}
+.assembly-insight.is-open {
+  top: 73px;
+  bottom: auto;
+  width: 265px;
+  padding: 13px 16px 11px;
+  border-left: 1px solid var(--vermilion);
+  box-shadow: 2px 5px 20px #5f4b2010;
+  background: #f8f2e4f5;
+  pointer-events: auto;
+}
+.assembly-insight > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+.assembly-insight > div > span {
+  font: 7px/1.65 var(--mono);
+  color: var(--vermilion);
+  letter-spacing: 0.2px;
+}
+.assembly-insight > div > button {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -5px -8px -3px 0;
+  background: none;
+  border: 0;
+  color: var(--vermilion);
+  font-size: 19px;
+}
+.assembly-insight h2 {
+  font: 400 28px/1 var(--serif);
+  letter-spacing: -0.7px;
+  margin: 8px 0;
+}
+.assembly-insight p {
+  font-size: 10px;
+  line-height: 1.8;
+  margin: 0;
+  color: #655f52;
+}
+.draft-axes {
+  position: absolute;
+  left: 6%;
+  bottom: 147px;
+  width: 68px;
+  height: 68px;
+  fill: none;
+  stroke: var(--vermilion);
+  stroke-width: 0.8;
+  opacity: 0.65;
+  pointer-events: none;
+}
+.draft-axes text {
+  font: 8px var(--mono);
+  fill: var(--vermilion);
+  stroke: none;
+}
+.draft-axes circle {
+  fill: var(--vermilion);
+}
+.diagram-disclaimer {
+  position: absolute;
+  left: 5%;
+  bottom: 125px;
+  margin: 0;
+  font: 6px var(--mono);
+  letter-spacing: 0.7px;
+  color: var(--draft-muted);
+  pointer-events: none;
+}
+
+/* Scrubber = native, accessible range input. Buttons seek in the same timeline. */
+.atelier-footer {
+  position: absolute;
+  z-index: 11;
+  left: 5%;
+  right: 5%;
+  bottom: 12px;
+}
+.scroll-chapter {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding-bottom: 13px;
+}
+.scroll-chapter > p {
+  margin: 0;
+  font: italic 23px/1.2 var(--serif);
+  letter-spacing: -0.3px;
+}
+.scroll-chapter > span {
+  font-size: 9px;
+  color: var(--draft-muted);
+}
+.scroll-chapter .scroll-cue {
+  font: 7px var(--mono);
+  letter-spacing: 1px;
+  margin-left: auto;
+  color: var(--vermilion);
+}
+.draft-controls {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid #5d513639;
+  padding: 15px 0 12px;
+}
+.draft-scale {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.draft-scale > i {
+  position: relative;
+  display: block;
+  width: 50px;
+  height: 9px;
+  border-bottom: 1px solid var(--ink);
+  border-left: 1px solid var(--ink);
+  border-right: 1px solid var(--ink);
+  background: repeating-linear-gradient(
+      90deg,
+      #1a1817 0 1px,
+      transparent 1px 10px
+    )
+    bottom / 100% 4px no-repeat;
+}
+.draft-scale > span {
+  font: 6px/1.8 var(--mono);
+  letter-spacing: 0.6px;
+  color: var(--draft-muted);
+}
+.disassembly-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+.disassembly-control button {
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 8px 0;
+  background: none;
+  font: 8px var(--mono);
+  letter-spacing: 0.2px;
+  color: var(--draft-muted);
+}
+.disassembly-control button.is-current {
+  color: var(--vermilion);
+  border-bottom-color: var(--vermilion);
+}
+.disassembly-control input {
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 50px;
+  width: 100%;
+  max-width: 190px;
+  height: 25px;
+  margin: 0;
+  background:
+    repeating-linear-gradient(90deg, #1a18172f 0 1px, transparent 1px 10px)
+      center / 100% 7px no-repeat,
+    linear-gradient(#1a18174d, #1a18174d) center / 100% 1px no-repeat;
+}
+.disassembly-control input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 9px;
+  height: 15px;
+  background: var(--vermilion);
+  border: 3px solid #f4eddd;
+  box-shadow: 0 0 0 1px #8c2d19;
+  border-radius: 0;
+}
+.disassembly-control input::-moz-range-thumb {
+  width: 5px;
+  height: 11px;
+  background: var(--vermilion);
+  border: 2px solid #f4eddd;
+  box-shadow: 0 0 0 1px #8c2d19;
+  border-radius: 0;
+}
+.draft-progress {
+  font: 9px var(--mono);
+  text-align: right;
+  color: var(--draft-muted);
+}
+.draft-progress > strong {
+  font-weight: 400;
+  color: var(--vermilion);
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.draft-progress > span {
+  display: block;
+  font-size: 6px;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+.atelier-progress-track {
+  width: 100%;
+  height: 2px;
+  background: #8c2d1915;
+}
+.atelier-progress-track > i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--vermilion);
+  transform-origin: left;
+}
+
+/* All five assemblies remain available as readable, unpinned field notes. */
+.anatomy-notes {
+  padding-top: 110px;
+  background: var(--paper);
+  border-top: 1px solid var(--draft-line);
+}
+.anatomy-notes .section-heading h2 {
+  font-size: clamp(40px, 4.1vw, 65px);
+}
+.anatomy-notes .section-heading p:not(.eyebrow) {
+  color: var(--draft-muted);
+  font-size: 11px;
+}
+.anatomy-note-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 60px;
+}
+.anatomy-note {
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  border: 1px solid var(--draft-line);
+  background: #fbf6e8;
+  box-shadow: 2px 5px 15px #80662d05;
+}
+.note-folio {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font: 7px var(--mono);
+  color: var(--vermilion);
+  letter-spacing: 0.5px;
+}
+.note-folio > span:last-child {
+  color: var(--draft-muted);
+}
+.note-drawing {
+  width: 100%;
+  aspect-ratio: 870 / 400;
+  margin: 20px 0;
+}
+.note-drawing .blueprint-svg {
+  pointer-events: auto;
+}
+.anatomy-note h3 {
+  font-size: 27px;
+  letter-spacing: -0.5px;
+  margin-bottom: 13px;
+}
+.anatomy-note > p {
+  font-size: 11px;
+  color: #625c50;
+  line-height: 1.9;
+  margin-bottom: 22px;
+}
+.note-material {
+  display: block;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--draft-line);
+  font: 7px/1.8 var(--mono);
+  color: var(--draft-muted);
+}
+.note-return {
+  align-items: flex-start;
+  justify-content: center;
+  background: #e8dec9;
+  min-height: 360px;
+  position: relative;
+  overflow: hidden;
+}
+.note-return h3 {
+  font-size: 45px;
+  z-index: 1;
+}
+.note-return .eyebrow {
+  color: var(--vermilion);
+  font-size: 7px;
+}
+.note-return .text-link {
+  position: relative;
+  font-size: 10px;
+  margin-top: 5px;
+}
+.note-return-mark {
+  position: absolute;
+  right: -8px;
+  top: 36px;
+  font: 260px/1 var(--serif);
+  color: #8c2d190b;
+  pointer-events: none;
+}
+.anatomy-concept-note {
+  margin: 40px 0 0;
+  max-width: 900px;
+  font: 8px/1.9 var(--mono);
+  color: var(--draft-muted);
+  letter-spacing: 0.3px;
+}
+
+@media (min-width: 1700px) {
+  .anatomy-scene {
+    width: 970px;
+  }
+  .assembly-callout {
+    width: 240px;
+  }
+  .callout-content strong {
+    font-size: 9px;
+  }
+  .callout-content > span {
+    font-size: 8px;
+  }
+}
+@media (max-width: 1100px) {
+  .atelier-heading h1 {
+    font-size: 58px;
+  }
+  .atelier-intro {
+    font-size: 10px;
+  }
+  .assembly-callout {
+    width: 160px;
+    gap: 8px;
+  }
+  .callout-content strong {
+    font-size: 8px;
+    letter-spacing: 0.4px;
+  }
+  .callout-content > span {
+    font-size: 7px;
+  }
+  .callout-number {
+    width: 24px;
+    height: 24px;
+  }
+  .scroll-chapter > span:not(.scroll-cue) {
+    display: none;
+  }
+  .draft-controls {
+    grid-template-columns: 1fr 1.5fr 0.5fr;
+  }
+  .draft-scale {
+    gap: 10px;
+  }
+  .draft-scale > i {
+    width: 30px;
+  }
+  .draft-scale > span {
+    font-size: 5px;
+  }
+  .anatomy-note-grid {
+    gap: 15px;
+  }
+  .anatomy-note {
+    padding: 18px;
+  }
+}
+@media (max-width: 860px) {
+  .atelier-breadcrumb > span:not(.atelier-status) {
+    display: none;
+  }
+  .atelier-heading {
+    margin-top: 25px;
+  }
+  .atelier-heading h1 {
+    font-size: clamp(42px, 6.8vw, 60px);
+  }
+  .atelier-heading .eyebrow {
+    font-size: 7px;
+  }
+  .atelier-intro {
+    display: none;
+  }
+  .anatomy-scene {
+    width: 76vw;
+    top: 47%;
+  }
+  .assembly-callouts {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    inset: auto 5% 126px;
+    pointer-events: auto;
+  }
+  .assembly-callout {
+    position: static;
+    width: auto;
+    gap: 6px;
+    background: none;
+    padding: 8px 0;
+  }
+  .callout-number {
+    width: 20px;
+    height: 20px;
+    font-size: 6px;
+  }
+  .callout-content {
+    padding-top: 4px;
+    border-color: #8c2d1930;
+  }
+  .callout-content strong {
+    font-size: 7px;
+    letter-spacing: 0.2px;
+  }
+  .callout-content > span,
+  .callout-content > small {
+    display: none;
+  }
+  .blueprint-leaders {
+    opacity: 0.35;
+  }
+  .assembly-insight {
+    display: none;
+  }
+  .assembly-insight.is-open {
+    display: block;
+    top: 140px;
+    right: 5%;
+    width: 235px;
+  }
+  .draft-axes {
+    bottom: 230px;
+    width: 55px;
+    height: 55px;
+  }
+  .diagram-disclaimer {
+    display: none;
+  }
+  .anatomy-note-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .anatomy-notes .section-heading {
+    display: block;
+  }
+  .anatomy-notes .section-heading p:not(.eyebrow) {
+    margin-top: 25px;
+  }
+}
+@media (max-width: 600px) {
+  .atelier-breadcrumb {
+    padding-top: 24px;
+    font-size: 7px;
+  }
+  .atelier-breadcrumb .atelier-status {
+    font-size: 5px;
+    letter-spacing: 0.2px;
+  }
+  .atelier-status > i {
+    margin-right: 5px;
+    width: 4px;
+    height: 4px;
+  }
+  .atelier-breadcrumb a {
+    gap: 6px;
+  }
+  .atelier-heading {
+    margin-top: 22px;
+  }
+  .atelier-heading .eyebrow {
+    font-size: 6px;
+    letter-spacing: 1.3px;
+    margin-bottom: 12px;
+  }
+  .atelier-heading h1 {
+    font-size: clamp(37px, 9.4vw, 54px);
+    letter-spacing: -1.5px;
+  }
+  .anatomy-scene {
+    width: 94vw;
+    top: 43%;
+  }
+  .anatomy-camera {
+    perspective: 1100px;
+  }
+  .blueprint-shadow {
+    left: 8%;
+    right: 7%;
+    top: 53%;
+    height: 5%;
+  }
+  .draft-folio {
+    font-size: 105px;
+    bottom: 34%;
+  }
+  .draft-axes {
+    display: none;
+  }
+  .blueprint-leaders {
+    display: none;
+  }
+  .assembly-callouts {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px 18px;
+    bottom: 119px;
+  }
+  .assembly-callout {
+    gap: 9px;
+    padding: 6px 0;
+    align-items: center;
+    min-height: 44px;
+  }
+  .assembly-callout:last-child {
+    grid-column: 1 / -1;
+    max-width: 75%;
+  }
+  .callout-number {
+    margin: 0;
+    width: 23px;
+    height: 23px;
+    font-size: 7px;
+  }
+  .callout-content {
+    padding-top: 6px;
+    min-height: 30px;
+    justify-content: center;
+  }
+  .callout-content strong {
+    font-size: 8px;
+    letter-spacing: 0.1px;
+    line-height: 1.65;
+  }
+  .assembly-insight.is-open {
+    top: 135px;
+    left: 5%;
+    right: 5%;
+    width: auto;
+    padding: 12px 15px;
+  }
+  .assembly-insight h2 {
+    font-size: 27px;
+    margin: 6px 0;
+  }
+  .assembly-insight p {
+    font-size: 10px;
+    line-height: 1.7;
+  }
+  .atelier-footer {
+    bottom: 10px;
+  }
+  .scroll-chapter {
+    padding-bottom: 10px;
+  }
+  .scroll-chapter > p {
+    font-size: 19px;
+    max-width: 74%;
+  }
+  .scroll-chapter .scroll-cue {
+    font-size: 5px;
+    max-width: 75px;
+    text-align: right;
+    line-height: 1.8;
+    letter-spacing: 0.4px;
+  }
+  .draft-controls {
+    grid-template-columns: 1fr auto;
+    gap: 15px;
+    padding: 12px 0 10px;
+  }
+  .draft-scale {
+    display: none;
+  }
+  .disassembly-control {
+    gap: 12px;
+  }
+  .disassembly-control button {
+    font-size: 7px;
+  }
+  .disassembly-control input {
+    width: 100%;
+    max-width: 160px;
+  }
+  .draft-progress {
+    font-size: 7px;
+    white-space: nowrap;
+  }
+  .draft-progress > strong {
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .draft-progress > span {
+    font-size: 4px;
+    letter-spacing: 0.7px;
+  }
+  .anatomy-notes {
+    padding-top: 65px;
+  }
+  .anatomy-notes .section-heading h2 {
+    font-size: 41px;
+    letter-spacing: -1.3px;
+  }
+  .anatomy-note-grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    margin-top: 35px;
+  }
+  .anatomy-note {
+    padding: 22px;
+  }
+  .anatomy-note h3 {
+    font-size: 30px;
+  }
+  .note-drawing {
+    margin: 20px 0 25px;
+  }
+  .anatomy-concept-note {
+    font-size: 7px;
+  }
+}
+@media (max-height: 720px) and (min-width: 861px) {
+  .atelier-breadcrumb {
+    padding-top: 20px;
+  }
+  .atelier-heading {
+    margin-top: 14px;
+  }
+  .atelier-heading h1 {
+    font-size: 51px;
+  }
+  .atelier-heading .eyebrow {
+    margin-bottom: 9px;
+    font-size: 7px;
+  }
+  .anatomy-scene {
+    width: min(55vw, 670px);
+    top: 52%;
+  }
+  .callout-coachwork {
+    top: 31%;
+  }
+  .callout-powertrain {
+    top: 49%;
+  }
+  .callout-suspension {
+    top: 67%;
+  }
+  .callout-cockpit {
+    top: 35%;
+  }
+  .callout-chassis {
+    top: 57%;
+  }
+  .callout-content > span {
+    display: none;
+  }
+  .assembly-insight:not(.is-open),
+  .draft-axes,
+  .diagram-disclaimer {
+    display: none;
+  }
+  .assembly-insight.is-open {
+    top: 65px;
+  }
+  .scroll-chapter {
+    padding-bottom: 8px;
+  }
+  .scroll-chapter > p {
+    font-size: 19px;
+  }
+  .draft-controls {
+    padding: 10px 0 8px;
+  }
+}
+/* No pinned marathon or automatic camera rotation for motion-sensitive users.
+   The complete exploded study is shown immediately; controls work instantly. */
+.anatomy-scroll.is-static {
+  height: auto;
+}
+.is-static .anatomy-stage {
+  position: relative;
+  top: 0;
+  height: max(780px, calc(100svh - 72px));
+}
+.is-static .draft-grid {
+  transform: none !important;
+  will-change: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anatomy-scene,
+  .blueprint-layer {
+    will-change: auto;
+  }
+}
+@media (max-width: 600px) and (max-height: 740px) {
+  .atelier-breadcrumb {
+    padding-top: 18px;
+  }
+  .atelier-heading {
+    margin-top: 13px;
+  }
+  .atelier-heading h1 {
+    font-size: 35px;
+  }
+  .atelier-heading .eyebrow {
+    margin-bottom: 9px;
+  }
+  .anatomy-scene {
+    top: 41%;
+    width: 83vw;
+  }
+  .assembly-callouts {
+    bottom: 102px;
+    row-gap: 0;
+  }
+  .assembly-callout {
+    padding: 4px 0;
+    min-height: 32px;
+  }
+  .callout-content strong {
+    font-size: 7px;
+  }
+  .callout-content {
+    min-height: 26px;
+  }
+  .scroll-chapter > p {
+    font-size: 16px;
+  }
+  .draft-controls {
+    padding-block: 8px;
+  }
+}

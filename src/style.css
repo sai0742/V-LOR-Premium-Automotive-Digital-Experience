@@ -69,7 +69,7 @@ p {
 h1,
 h2,
 h3 {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Cormorant Garamond Variable", Georgia, serif;
   font-weight: 400;
 }
 h1 em,
@@ -135,7 +135,7 @@ h3 {
   display: flex;
   align-items: center;
   gap: 9px;
-  font-family: "Cormorant Garamond", serif;
+  font-family: "Cormorant Garamond Variable", serif;
   font-size: 27px;
   letter-spacing: 4px;
 }
@@ -255,12 +255,24 @@ h1 em {
   position: absolute;
   inset: 4% 2% 6%;
   background:
-    radial-gradient(58% 46% at 22% 18%, rgba(201, 35, 43, 0.16), transparent 70%),
-    radial-gradient(46% 55% at 82% 78%, rgba(100, 116, 90, 0.18), transparent 72%),
-    radial-gradient(70% 60% at 50% 50%, rgba(216, 199, 167, 0.5), transparent 78%);
+    radial-gradient(
+      58% 46% at 22% 18%,
+      rgba(201, 35, 43, 0.16),
+      transparent 70%
+    ),
+    radial-gradient(
+      46% 55% at 82% 78%,
+      rgba(100, 116, 90, 0.18),
+      transparent 72%
+    ),
+    radial-gradient(
+      70% 60% at 50% 50%,
+      rgba(216, 199, 167, 0.5),
+      transparent 78%
+    );
   filter: blur(2px);
 }
-.hero-art > img {
+.hero-art > .art-frame {
   position: relative;
   width: 90%;
   margin: -5px auto -10px;
@@ -274,7 +286,11 @@ h1 em {
   pointer-events: none;
   mix-blend-mode: soft-light;
   background:
-    radial-gradient(85% 70% at 50% 0%, rgba(247, 240, 223, 0.9), transparent 60%),
+    radial-gradient(
+      85% 70% at 50% 0%,
+      rgba(247, 240, 223, 0.9),
+      transparent 60%
+    ),
     linear-gradient(180deg, transparent 55%, rgba(23, 23, 21, 0.16));
 }
 .art-label {
@@ -294,7 +310,7 @@ h1 em {
   font-size: 25px;
 }
 .handnote {
-  font-family: "Cormorant Garamond", serif;
+  font-family: "Cormorant Garamond Variable", serif;
   font-style: italic;
   font-size: 23px;
   transform: rotate(-5deg);
@@ -399,7 +415,7 @@ h1 em {
   background-size: 32px 32px;
   box-shadow: 0 12px 30px #17171508;
 }
-.drawing > img {
+.drawing > .art-frame {
   width: 100%;
   mix-blend-mode: multiply;
 }
@@ -413,7 +429,7 @@ h1 em {
 .callout {
   position: absolute;
   font:
-    italic 18px "Cormorant Garamond",
+    italic 18px "Cormorant Garamond Variable",
     serif;
   color: #4d5145;
   z-index: 1;
@@ -579,7 +595,7 @@ h1 em {
   font-size: 13px;
 }
 .signature {
-  font-family: "Cormorant Garamond", serif;
+  font-family: "Cormorant Garamond Variable", serif;
   font-style: italic;
   font-size: 28px;
   margin: 28px 0 15px;
@@ -722,7 +738,7 @@ dd {
   background: #e3e5d8;
   padding-bottom: 70px;
 }
-.roadster > img {
+.roadster > .art-frame {
   width: 90%;
   margin: -40px auto -40px;
   mix-blend-mode: multiply;
@@ -821,7 +837,7 @@ dd {
   padding-bottom: 50px;
 }
 .footer-brand {
-  font-family: "Cormorant Garamond", serif;
+  font-family: "Cormorant Garamond Variable", serif;
   font-size: 54px;
   letter-spacing: 6px;
   line-height: 1;
@@ -888,7 +904,7 @@ dd {
     padding-left: max(6%, calc((100vw - 1450px) / 2));
     padding-right: max(6%, calc((100vw - 1450px) / 2));
   }
-  .hero-art > img {
+  .hero-art > .art-frame {
     width: 84%;
   }
 }
@@ -906,7 +922,7 @@ dd {
   .hero-intro {
     width: 34%;
   }
-  .hero-art > img {
+  .hero-art > .art-frame {
     width: 100%;
     margin-top: 12px;
   }
@@ -1077,7 +1093,7 @@ dd {
     padding-top: 25px;
     padding-bottom: 35px;
   }
-  .hero-art > img {
+  .hero-art > .art-frame {
     width: 100%;
     margin: 16px auto 0;
   }
@@ -1170,7 +1186,7 @@ dd {
     font-size: 6px;
     letter-spacing: 0.4px;
   }
-  .drawing > img {
+  .drawing > .art-frame {
     padding-top: 28px;
     padding-bottom: 25px;
   }
@@ -1295,7 +1311,7 @@ dd {
   .roadster .section-heading p {
     margin-top: 18px;
   }
-  .roadster > img {
+  .roadster > .art-frame {
     width: 112%;
     max-width: 112%;
     margin: -5px -6% -5px;
@@ -1416,81 +1432,5 @@ dd {
   }
   .notebook-art {
     transform: none;
-  }
-}
-
-/* ── Interaction upgrade: dual-ring magnetic cursor ─────────────────── */
-.cursor {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  display: none;
-}
-body.has-cursor .cursor.is-live {
-  display: block;
-}
-body.has-cursor,
-body.has-cursor a,
-body.has-cursor button {
-  cursor: none;
-}
-.cursor-dot,
-.cursor-ring {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  will-change: transform;
-}
-.cursor-dot {
-  width: 7px;
-  height: 7px;
-  margin: -3.5px 0 0 -3.5px;
-  background: var(--red);
-}
-.cursor-ring {
-  width: 36px;
-  height: 36px;
-  margin: -18px 0 0 -18px;
-  border: 1px solid var(--line);
-  transition:
-    width 0.3s,
-    height 0.3s,
-    margin 0.3s,
-    border-color 0.3s,
-    background-color 0.3s;
-}
-.cursor.is-active .cursor-ring {
-  width: 56px;
-  height: 56px;
-  margin: -28px 0 0 -28px;
-  border-color: var(--red);
-  background: rgba(201, 35, 43, 0.07);
-}
-[data-magnetic] {
-  will-change: transform;
-}
-@media (pointer: coarse) {
-  .cursor {
-    display: none !important;
-  }
-  body.has-cursor,
-  body.has-cursor a,
-  body.has-cursor button {
-    cursor: auto;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .cursor {
-    display: none !important;
-  }
-  body.has-cursor,
-  body.has-cursor a,
-  body.has-cursor button {
-    cursor: auto;
-  }
-  [data-magnetic] {
-    transform: none !important;
   }
 }
