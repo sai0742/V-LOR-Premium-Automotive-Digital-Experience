@@ -52,12 +52,12 @@ export default function Navigation() {
           ["Craftsmanship", "craftsmanship"],
           ["Journal", "journal"],
         ].map(([name, id]) => (
-          <a key={id} href={`#${id}`} onClick={() => setOpen(false)}>
+          <a key={id} href={`#${id}`} data-magnetic onClick={() => setOpen(false)}>
             {name}
           </a>
         ))}
       </nav>
-      <a className="nav-cta" href="#registry">
+      <a className="nav-cta" href="#registry" data-magnetic>
         The registry <Arrow />
       </a>
       <button

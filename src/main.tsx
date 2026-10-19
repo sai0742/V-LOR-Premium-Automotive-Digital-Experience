@@ -9,6 +9,7 @@ import "@fontsource/ibm-plex-mono/latin-400.css";
 import "./style.css";
 
 import Navigation from "./components/Navigation";
+import MagneticCursor from "./components/MagneticCursor";
 import Hero from "./components/Hero";
 import Philosophy from "./components/Philosophy";
 import DesignBoard from "./components/DesignBoard";
@@ -41,6 +42,7 @@ function App() {
         Skip to content
       </a>
       <Navigation />
+      <MagneticCursor />
       <main id="main">
         <Hero />
         <Philosophy />

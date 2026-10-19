@@ -19,7 +19,7 @@ export default function Hero() {
             <br className="desktop-break" /> should be as beautiful as the
             destination.
           </p>
-          <a href="#collection" className="text-link">
+          <a href="#collection" className="text-link" data-magnetic>
             Discover the Auren GT <Arrow />
           </a>
         </div>
@@ -42,7 +42,7 @@ export default function Hero() {
         <span className="plate-number">FIG. 01 / DESIGN STUDY</span>
       </div>
       <div className="hero-bottom">
-        <a href="#collection">
+        <a href="#collection" data-magnetic>
           Explore the collection <span>↓</span>
         </a>
         <span>CONCEIVED WITH CHARACTER. DRAWN WITH SOUL.</span>

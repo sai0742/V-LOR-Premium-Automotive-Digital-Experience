@@ -43,7 +43,7 @@ export default function Registry() {
             aria-describedby="form-feedback registry-note"
             required
           />
-          <button type="submit">
+          <button type="submit" data-magnetic>
             Join the registry <Arrow />
           </button>
         </div>
