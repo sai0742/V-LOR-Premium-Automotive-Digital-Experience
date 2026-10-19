@@ -26,7 +26,7 @@ export default function Roadster() {
           An open roof. A lighter spirit. The Sirène takes the VÉLORÉ philosophy
           somewhere a little more spontaneous.
         </p>
-        <a className="text-link" href="#registry">
+        <a className="text-link" href="#registry" data-magnetic>
           Follow the Sirène story <Arrow />
         </a>
       </div>

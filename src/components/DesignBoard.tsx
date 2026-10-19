@@ -31,7 +31,7 @@ export default function DesignBoard() {
           Wire-spoke wheels. A timeless signature. <i />
         </div>
         <div className="drawing-bottom">
-          <div className="swatches">
+          <div className="swatches" data-magnetic>
             <i style={{ background: "#C9232B" }} />
             <i style={{ background: "#64745A" }} />
             <i style={{ background: "#D8C7A7" }} />
@@ -48,7 +48,7 @@ export default function DesignBoard() {
           <br />
           An imagined classic. An entirely contemporary point of view.
         </p>
-        <a href="#specifications" className="text-link">
+        <a href="#specifications" className="text-link" data-magnetic>
           View concept specifications <Arrow />
         </a>
       </div>

@@ -56,6 +56,7 @@ export default function Materials() {
             <button
               key={item.short}
               aria-pressed={i === active}
+              data-magnetic
               onClick={() => setActive(i)}
             >
               <span style={{ background: item.color }} />

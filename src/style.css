@@ -109,7 +109,8 @@ h3 {
 }
 .section {
   padding: 100px 6%;
-  scroll-margin-top: 0;
+  /* clears the 88px sticky nav with breathing room when anchor-jumping */
+  scroll-margin-top: 100px;
 }
 .nav {
   height: 88px;
@@ -178,6 +179,7 @@ h3 {
   display: none;
 }
 .hero {
+  scroll-margin-top: 100px;
   padding: 25px 5% 0;
 }
 .hero-top {
@@ -244,11 +246,36 @@ h1 em {
   position: relative;
   margin-top: -2px;
   animation: art-enter 1.3s both;
+  isolation: isolate;
+}
+/* pigment wash sitting beneath the artwork so the multiplied image blends
+   into coloured stock instead of flat paper */
+.hero-art::before {
+  content: "";
+  position: absolute;
+  inset: 4% 2% 6%;
+  background:
+    radial-gradient(58% 46% at 22% 18%, rgba(201, 35, 43, 0.16), transparent 70%),
+    radial-gradient(46% 55% at 82% 78%, rgba(100, 116, 90, 0.18), transparent 72%),
+    radial-gradient(70% 60% at 50% 50%, rgba(216, 199, 167, 0.5), transparent 78%);
+  filter: blur(2px);
 }
 .hero-art > img {
+  position: relative;
   width: 90%;
   margin: -5px auto -10px;
   mix-blend-mode: multiply;
+}
+/* varnish-like soft-light pass over the whole plate */
+.hero-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  background:
+    radial-gradient(85% 70% at 50% 0%, rgba(247, 240, 223, 0.9), transparent 60%),
+    linear-gradient(180deg, transparent 55%, rgba(23, 23, 21, 0.16));
 }
 .art-label {
   position: absolute;
@@ -1389,5 +1416,81 @@ dd {
   }
   .notebook-art {
     transform: none;
+  }
+}
+
+/* ── Interaction upgrade: dual-ring magnetic cursor ─────────────────── */
+.cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  display: none;
+}
+body.has-cursor .cursor.is-live {
+  display: block;
+}
+body.has-cursor,
+body.has-cursor a,
+body.has-cursor button {
+  cursor: none;
+}
+.cursor-dot,
+.cursor-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  will-change: transform;
+}
+.cursor-dot {
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  background: var(--red);
+}
+.cursor-ring {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border: 1px solid var(--line);
+  transition:
+    width 0.3s,
+    height 0.3s,
+    margin 0.3s,
+    border-color 0.3s,
+    background-color 0.3s;
+}
+.cursor.is-active .cursor-ring {
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-color: var(--red);
+  background: rgba(201, 35, 43, 0.07);
+}
+[data-magnetic] {
+  will-change: transform;
+}
+@media (pointer: coarse) {
+  .cursor {
+    display: none !important;
+  }
+  body.has-cursor,
+  body.has-cursor a,
+  body.has-cursor button {
+    cursor: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor {
+    display: none !important;
+  }
+  body.has-cursor,
+  body.has-cursor a,
+  body.has-cursor button {
+    cursor: auto;
+  }
+  [data-magnetic] {
+    transform: none !important;
   }
 }

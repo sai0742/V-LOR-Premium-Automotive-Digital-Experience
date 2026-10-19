@@ -32,7 +32,7 @@ export default function Philosophy() {
             concepts.
           </p>
         </div>
-        <a className="text-link" href="#journal">
+        <a className="text-link" href="#journal" data-magnetic>
           Inside our design philosophy <Arrow />
         </a>
       </div>

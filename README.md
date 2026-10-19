@@ -24,7 +24,7 @@ npm test
 
 The Playwright configuration uses a development-only bundled Linux Chromium (`@sparticuz/chromium`) because the Arena environment blocks the standard Playwright browser CDN. It automatically extracts the companion NSS/NSPR libraries into the operating system’s temporary directory. `npm test` works directly in this Linux environment. For macOS/Windows or conventional CI, install standard Playwright Chromium and remove the custom `launchOptions` and Linux extraction setup from `playwright.config.ts`.
 
-Eight browser tests cover five viewport sizes (320, 375, 768, 1024, 1440), document overflow, image loading, console errors, material switching, form validation, anchor navigation, mobile menu focus/escape and reduced motion. Screenshots are generated in ignored `test-results/`.
+Eight browser tests cover five viewport sizes (320, 375, 768, 1024, 1440), document overflow, image loading, console errors, material switching, form validation, anchor navigation, mobile menu focus/escape and reduced motion. Thirteen in total once the interaction-upgrade checks below are counted: cursor tracking and CTA magnetism, magnetic release back to rest, coarse-pointer and reduced-motion fallbacks, and anchor scroll-margin/hero blend assertions. Screenshots are generated in ignored `test-results/`.
 
 ## Structure
 
@@ -37,7 +37,14 @@ Eight browser tests cover five viewport sizes (320, 375, 768, 1024, 1440), docum
 
 Supplied VÉLORÉ emblem and development sketch remain in the experience. The navigation uses a cropped derivative of the original emblem, not a replacement mark. The supplied watercolor is retained as an archive asset; the supplied cartoon and interface screenshots informed direction but are not presented as original vehicle artwork. Newly generated Auren, Sirène and cockpit watercolor/ink concept illustrations complete the visual story. Detail studies are deliberate crops from the same Auren artwork. Google Font families are packaged locally via Fontsource: Cormorant Garamond, DM Sans and IBM Plex Mono.
 
-Motion is CSS and IntersectionObserver only: sequenced-feeling entrance, on-entry reveals, restrained image hover, tactile links, and a compact scrolled navigation. Paper shadows and rotated notebook layers provide depth; there is **no interactive 3D model**, scroll-jacking or continuous animation. Observer and event listeners are cleaned up. Content is visible without reveal scripts. Reduced-motion disables motion and smooth scrolling.
+Motion is CSS and IntersectionObserver only: sequenced-feeling entrance, on-entry reveals, restrained image hover, tactile links, and a compact scrolled navigation. Paper shadows and rotated notebook layers provide depth; there is **no interactive 3D model**, scroll-jacking or ambient animation. Observer and event listeners are cleaned up. Content is visible without reveal scripts. Reduced-motion disables motion and smooth scrolling.
+
+### Interaction upgrade (v1.1)
+
+- **Dual-ring magnetic cursor** (`src/components/MagneticCursor.tsx`): a fast inner dot and a lazier outer ring trail the pointer; elements marked `data-magnetic` — navigation links, the registry CTA, text-link CTAs, design-board swatches and material swatch buttons — are pulled toward the pointer by up to 10px and ease back to rest on leave, while the ring expands and tints red over them. The native cursor is hidden only while the layer is live.
+- **Hero image blending**: the hero artwork multiplies into a blurred pigment wash (`::before`) and receives a soft-light varnish pass (`::after`) inside an isolated stacking context, so the watercolor sits into coloured stock rather than flat paper.
+- **100px section scroll margins**: `.section` and `.hero` carry `scroll-margin-top: 100px`, clearing the 88px sticky navigation when anchor links jump.
+- **Fallbacks**: the cursor layer mounts only for `pointer: fine` and is removed entirely under `prefers-reduced-motion` (native cursor restored, magnetic transforms cleared and blocked with `!important`); touch and motion-sensitive visitors get the unchanged experience. Its requestAnimationFrame loop is cancelled on unmount and when disabled.
 
 ## Registry integration
 
