@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { assemblies } from "../components/anatomy/assemblies";
+import {
+  assemblies,
+  separationWindows,
+} from "../components/anatomy/assemblies";
 
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
 const smoothstep = (v: number) => v * v * (3 - 2 * v);
@@ -90,8 +93,19 @@ export function useExplodedBlueprint() {
       scene.style.transform = staticView
         ? "translate(-50%, -50%)"
         : `translate(-50%, -50%) rotateX(${(7 - e * 10).toFixed(2)}deg) rotateY(${(-13 + e * 23).toFixed(2)}deg) rotateZ(${(-4 + e * 5).toFixed(2)}deg)`;
-      layers.forEach(({ assembly, layer }, i) => {
-        const t = smoothstep(clamp((p - i * 0.018) / (1 - i * 0.018)));
+      layers.forEach(({ assembly, layer, label }) => {
+        const [separationStart, separationEnd] =
+          separationWindows[assembly.id];
+        const t = smoothstep(
+          clamp(
+            (p - separationStart) / (separationEnd - separationStart),
+          ),
+        );
+        const labelStart = Math.max(0, separationStart - 0.025);
+        const labelReveal = staticView
+          ? 1
+          : clamp((p - labelStart) / (separationEnd - labelStart));
+        label.style.opacity = (0.68 + labelReveal * 0.32).toFixed(3);
         const [baseX, baseY, z] = assembly.offset;
         // Wider sheets need extra clearance under the full-size coachwork.
         // On phones the smaller drawing already leaves those layers exposed.
@@ -127,13 +141,18 @@ export function useExplodedBlueprint() {
       const viewBox = `0 0 ${bounds.width} ${bounds.height}`;
       if (leaders.getAttribute("viewBox") !== viewBox)
         leaders.setAttribute("viewBox", viewBox);
-      projection.forEach(({ assembly, leader, dot, x, y, fromX, fromY }, i) => {
+      projection.forEach(({ assembly, leader, dot, x, y, fromX, fromY }) => {
         const elbowX = fromX + (assembly.side === "left" ? 24 : -24);
         leader.setAttribute(
           "d",
           `M${fromX.toFixed(1)} ${fromY.toFixed(1)} H${elbowX.toFixed(1)} L${x.toFixed(1)} ${y.toFixed(1)}`,
         );
-        const draw = staticView ? 1 : clamp((p - 0.04 - i * 0.055) / 0.42);
+        const [separationStart, separationEnd] =
+          separationWindows[assembly.id];
+        const leaderStart = Math.max(0, separationStart - 0.025);
+        const draw = staticView
+          ? 1
+          : clamp((p - leaderStart) / (separationEnd - leaderStart));
         leader.style.strokeDashoffset = (1 - draw).toFixed(4);
         dot.setAttribute("cx", x.toFixed(1));
         dot.setAttribute("cy", y.toFixed(1));

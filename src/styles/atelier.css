@@ -49,7 +49,7 @@
   font-variation-settings: "wght" var(--ink-weight, 400);
 }
 .ink-reveal.ink-visible {
-  animation: ink-settle 1.55s cubic-bezier(0.2, 0.65, 0.25, 1) both;
+  animation: ink-settle var(--motion-editorial) var(--ease-editorial) both;
 }
 @keyframes ink-settle {
   0% {
@@ -89,7 +89,7 @@
   overflow: hidden;
   transform: perspective(1200px) rotateX(calc(var(--ay) * -1.8deg))
     rotateY(calc(var(--ax) * 2.5deg));
-  transition: transform 0.65s cubic-bezier(0.2, 0.7, 0.25, 1);
+  transition: transform var(--motion-editorial) var(--ease-editorial);
 }
 .art-frame .art-base {
   display: block;
@@ -97,9 +97,9 @@
   opacity: 0.88;
   filter: sepia(0.28) saturate(0.76) contrast(0.96);
   transition:
-    filter 1.1s,
-    opacity 1.1s,
-    translate 0.8s;
+    filter var(--motion-cinematic) var(--ease-quiet),
+    opacity var(--motion-cinematic) var(--ease-quiet),
+    translate var(--motion-editorial) var(--ease-quiet);
   translate: calc(var(--ax) * -4px) calc(var(--ay) * -3px);
 }
 .art-frame .art-sketch {
@@ -118,8 +118,8 @@
   mask-composite: intersect;
   opacity: 0.52;
   transition:
-    opacity 1.1s,
-    translate 0.8s;
+    opacity var(--motion-cinematic) var(--ease-quiet),
+    translate var(--motion-editorial) var(--ease-quiet);
   translate: calc(var(--ax) * -4px) calc(var(--ay) * -3px);
 }
 .art-frame::before {
@@ -136,7 +136,7 @@
     100% 100%;
   mix-blend-mode: multiply;
   opacity: 0.2;
-  transition: opacity 1s;
+  transition: opacity var(--motion-cinematic) var(--ease-quiet);
 }
 .art-frame::after {
   content: "";
@@ -188,8 +188,8 @@
   transform: rotateZ(-4deg);
   transform-style: preserve-3d;
   transition:
-    transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1),
-    box-shadow 0.75s;
+    transform var(--motion-editorial) var(--ease-editorial),
+    box-shadow var(--motion-editorial) var(--ease-quiet);
 }
 .notebook-art:hover,
 .notebook-art:focus-visible {
@@ -228,7 +228,7 @@
   transform: rotateZ(6deg);
   transform-style: preserve-3d;
   transform-origin: 20% 50%;
-  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.25, 1);
+  transition: transform var(--motion-editorial) var(--ease-editorial);
 }
 .tape::before,
 .tape::after {
@@ -258,8 +258,8 @@
   transform: rotateY(0) translateZ(0.5px);
   background: linear-gradient(90deg, #d7c596, #f0e3bf 72%, #cebb8d);
   transition:
-    transform 0.7s,
-    filter 0.7s;
+    transform var(--motion-editorial) var(--ease-editorial),
+    filter var(--motion-ui) var(--ease-quiet);
 }
 .notebook-art:hover .tape,
 .notebook-art:focus-visible .tape {
@@ -288,9 +288,9 @@
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 0.45s,
-    visibility 0.45s,
-    background-color 0.35s;
+    opacity var(--motion-ui) var(--ease-quiet),
+    visibility var(--motion-ui) var(--ease-quiet),
+    background-color var(--motion-ui) var(--ease-quiet);
 }
 .notebook-portal-badge > span {
   color: #d7aa8a;
@@ -308,7 +308,7 @@
   color: var(--vermilion);
   font-size: 17px;
   opacity: 0.55;
-  transition: opacity 0.3s;
+  transition: opacity var(--motion-ui) var(--ease-quiet);
 }
 .notebook-art:hover .portal-corner {
   opacity: 1;
