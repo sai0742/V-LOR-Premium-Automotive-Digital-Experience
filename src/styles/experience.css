@@ -1,0 +1,288 @@
+/* Shared cinematic opening and the restrained Auren illustration inspection. */
+.brand-intro {
+  position: fixed;
+  z-index: 160;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--paper);
+  pointer-events: none;
+  isolation: isolate;
+}
+.brand-intro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.28;
+  background:
+    radial-gradient(ellipse at 50% 44%, #fffaf0 0, transparent 56%),
+    linear-gradient(
+      90deg,
+      transparent 49.95%,
+      #8c2d190d 50%,
+      transparent 50.05%
+    ),
+    linear-gradient(0deg, transparent 49.95%, #8c2d190d 50%, transparent 50.05%);
+}
+.brand-intro-lockup {
+  display: flex;
+  width: min(84vw, 340px);
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.brand-intro-mark {
+  width: clamp(62px, 8vw, 84px);
+  height: auto;
+  margin-bottom: 17px;
+  mix-blend-mode: multiply;
+  animation: brand-mark-reveal 660ms var(--ease-editorial) 60ms both;
+}
+.brand-intro-name {
+  margin: 0;
+  padding-left: 0.34em;
+  color: var(--ink);
+  font:
+    400 clamp(31px, 5vw, 44px)/1.05 "Cormorant Garamond Variable",
+    Georgia,
+    serif;
+  letter-spacing: 0.34em;
+  animation: brand-name-reveal 620ms var(--ease-editorial) 260ms both;
+}
+.brand-intro-rule {
+  width: 0;
+  height: 1px;
+  margin: 18px 0 12px;
+  background: var(--vermilion);
+  animation: brand-rule-reveal 460ms var(--ease-quiet) 520ms both;
+}
+.brand-intro-edition {
+  margin: 0;
+  color: var(--draft-muted);
+  font: 7px/1.8 var(--mono);
+  letter-spacing: 1.45px;
+  opacity: 0;
+  animation: brand-edition-reveal 430ms var(--ease-quiet) 590ms both;
+}
+.brand-intro-skip {
+  position: absolute;
+  top: max(22px, env(safe-area-inset-top));
+  right: max(24px, env(safe-area-inset-right));
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid #1a181740;
+  color: var(--ink);
+  background: transparent;
+  font: 8px/1.5 var(--mono);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  pointer-events: auto;
+  transition:
+    color var(--motion-micro) var(--ease-quiet),
+    border-color var(--motion-micro) var(--ease-quiet);
+}
+.brand-intro-skip span {
+  color: var(--vermilion);
+  font-size: 13px;
+}
+.brand-intro-skip:hover {
+  color: var(--vermilion);
+  border-color: var(--vermilion);
+}
+.brand-intro.is-leaving {
+  animation: brand-intro-dissolve 460ms var(--ease-quiet) both;
+  will-change: opacity, transform;
+}
+@keyframes brand-mark-reveal {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+@keyframes brand-name-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 50% 0 50%);
+    letter-spacing: 0.52em;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    letter-spacing: 0.34em;
+    transform: translateY(0);
+  }
+}
+@keyframes brand-rule-reveal {
+  to {
+    width: 34px;
+  }
+}
+@keyframes brand-edition-reveal {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes brand-intro-dissolve {
+  to {
+    opacity: 0;
+    transform: translateY(-5px);
+    visibility: hidden;
+  }
+}
+
+/* The supplied car is one illustration, not a model or a multi-view sequence.
+   We move its entire undistorted image plane a few pixels in response to input. */
+.vehicle-view {
+  width: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: ew-resize;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.vehicle-view:focus-visible {
+  outline: 1px solid var(--vermilion);
+  outline-offset: 5px;
+}
+.vehicle-image-plane {
+  --pose-x: 0px;
+  --pose-y: 0px;
+  width: 100%;
+  transform: translate3d(var(--pose-x), var(--pose-y), 0);
+  will-change: transform;
+}
+.vehicle-view .art-frame {
+  width: 100%;
+  mix-blend-mode: multiply;
+}
+.vehicle-study-instructions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 32px;
+  padding: 8px 0 1px;
+  border-top: 1px solid #1a181720;
+  color: var(--draft-muted);
+  font: 6px/1.65 var(--mono);
+  letter-spacing: 0.65px;
+}
+.vehicle-study-gesture {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--vermilion);
+}
+.vehicle-study-gesture::before {
+  content: "↔";
+  font-size: 13px;
+  line-height: 1;
+}
+.vehicle-study-limit {
+  flex: 1;
+  text-align: right;
+}
+.vehicle-study-instructions button {
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 5px 0 5px 8px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    color var(--motion-micro) var(--ease-quiet),
+    border-color var(--motion-micro) var(--ease-quiet);
+}
+.vehicle-study-instructions button span {
+  margin-left: 5px;
+  color: var(--vermilion);
+  font-size: 12px;
+}
+.vehicle-study-instructions button:hover {
+  color: var(--vermilion);
+  border-color: var(--vermilion);
+}
+.vehicle-study-instructions button:focus-visible {
+  outline: 1px solid var(--vermilion);
+  outline-offset: 4px;
+}
+
+@media (max-width: 640px) {
+  .brand-intro-mark {
+    width: 68px;
+    margin-bottom: 13px;
+  }
+  .brand-intro-name {
+    font-size: 32px;
+  }
+  .brand-intro-edition {
+    font-size: 6px;
+    letter-spacing: 1px;
+  }
+  .brand-intro-skip {
+    top: max(15px, env(safe-area-inset-top));
+    right: max(6%, env(safe-area-inset-right));
+  }
+  .vehicle-view {
+    cursor: grab;
+  }
+  .vehicle-view:active {
+    cursor: grabbing;
+  }
+  .vehicle-study-instructions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 10px;
+    padding-top: 7px;
+  }
+  .vehicle-study-gesture {
+    font-size: 5px;
+    letter-spacing: 0.35px;
+  }
+  .vehicle-study-limit {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    text-align: left;
+    font-size: 5px;
+    letter-spacing: 0.35px;
+  }
+  .vehicle-study-instructions button {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 5px;
+    letter-spacing: 0.15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-intro {
+    display: none !important;
+  }
+  .vehicle-view {
+    cursor: auto;
+  }
+  .vehicle-study-gesture::before {
+    content: "—";
+    font-size: 10px;
+  }
+  .vehicle-image-plane {
+    transform: none !important;
+    will-change: auto;
+  }
+}

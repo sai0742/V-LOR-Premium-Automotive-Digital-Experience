@@ -8,6 +8,10 @@ export function useInkReveals(route: string) {
     );
     const calm = matchMedia("(prefers-reduced-motion: reduce)");
     elements.forEach((el) => el.classList.add("ink-reveal"));
+    if (!("IntersectionObserver" in window)) {
+      elements.forEach((el) => el.classList.add("ink-visible"));
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) =>
         entries.forEach((entry) => {

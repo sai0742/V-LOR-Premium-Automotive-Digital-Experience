@@ -16,11 +16,13 @@ export function Artwork({
   alt,
   className = "",
   eager = false,
+  pointerParallax = true,
 }: {
   src: string;
   alt: string;
   className?: string;
   eager?: boolean;
+  pointerParallax?: boolean;
 }) {
   const dimensions: Record<string, [number, number]> = {
     "auren-studio": [1584, 672],
@@ -61,8 +63,8 @@ export function Artwork({
       className={`art-frame ${className}`.trim()}
       ref={frame}
       data-loupe
-      onPointerMove={onMove}
-      onPointerLeave={onLeave}
+      onPointerMove={pointerParallax ? onMove : undefined}
+      onPointerLeave={pointerParallax ? onLeave : undefined}
     >
       <img
         className="art-base"

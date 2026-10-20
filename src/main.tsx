@@ -7,8 +7,10 @@ import "@fontsource/dm-sans/latin-500.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "./style.css";
 import "./styles/atelier.css";
+import "./styles/experience.css";
 import "./styles/anatomy.css";
 
+import BrandIntro from "./components/BrandIntro";
 import Navigation from "./components/Navigation";
 import MagneticCursor from "./components/MagneticCursor";
 import SvgDefs from "./components/SvgDefs";
@@ -32,6 +34,11 @@ function App() {
   const anatomy = pathname === "/anatomy";
   useInkReveals(pathname);
   useEffect(() => {
+    const targets = document.querySelectorAll<HTMLElement>(".reveal");
+    if (!("IntersectionObserver" in window)) {
+      targets.forEach((el) => el.classList.add("in-view"));
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -43,7 +50,7 @@ function App() {
       },
       { threshold: 0.08 },
     );
-    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    targets.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, [pathname]);
   return (
@@ -51,6 +58,7 @@ function App() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
+      <BrandIntro />
       <SvgDefs />
       <Navigation anatomy={anatomy} />
       <MagneticCursor />

@@ -1,4 +1,5 @@
-import { Arrow, Label, Artwork } from "./Shared";
+import { Arrow, Label } from "./Shared";
+import VehicleStudy from "./VehicleStudy";
 export default function DesignBoard() {
   return (
     <section className="section design-board" id="collection">
@@ -23,10 +24,7 @@ export default function DesignBoard() {
         <div className="callout callout-one">
           A continuous, unbroken shoulder line <i />
         </div>
-        <Artwork
-          src="auren-studio"
-          alt="Auren GT body study showing sculpted red bodywork and fastback proportions"
-        />
+        <VehicleStudy />
         <div className="callout callout-two">
           Wire-spoke wheels. A timeless signature. <i />
         </div>

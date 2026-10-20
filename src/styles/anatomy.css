@@ -180,7 +180,7 @@
   font-size: 11px;
   line-height: 1.8;
   max-width: 260px;
-  transition: opacity 0.2s;
+  transition: opacity var(--motion-micro) var(--ease-quiet);
 }
 .atelier-intro > span {
   color: var(--draft-muted);
@@ -219,8 +219,8 @@
   transform-style: preserve-3d;
   pointer-events: none;
   transition:
-    opacity 0.45s,
-    color 0.35s;
+    opacity var(--motion-ui) var(--ease-quiet),
+    color var(--motion-micro) var(--ease-quiet);
   will-change: transform;
 }
 .blueprint-layer:focus-visible {
@@ -360,8 +360,8 @@
   border-radius: 50%;
   font: 8px var(--mono);
   transition:
-    color 0.3s,
-    background 0.3s;
+    color var(--motion-micro) var(--ease-quiet),
+    background var(--motion-micro) var(--ease-quiet);
 }
 .callout-content strong {
   text-transform: uppercase;
@@ -383,6 +383,11 @@
   margin-left: 7px;
   font-style: normal;
   font-size: 11px;
+}
+.assembly-callout:hover,
+.assembly-callout.is-selected,
+.assembly-callout:focus-visible {
+  opacity: 1 !important;
 }
 .assembly-callout:hover .callout-number,
 .assembly-callout.is-selected .callout-number,

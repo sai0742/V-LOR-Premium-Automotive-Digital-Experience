@@ -73,6 +73,15 @@ export const assemblies = [
 
 export type AssemblyId = (typeof assemblies)[number]["id"];
 
+/** Normalized start/end ranges for the native-scroll disassembly sequence. */
+export const separationWindows = {
+  coachwork: [0.08, 0.58],
+  cockpit: [0.17, 0.69],
+  powertrain: [0.29, 0.79],
+  chassis: [0.42, 0.91],
+  suspension: [0.54, 0.98],
+} satisfies Record<AssemblyId, readonly [number, number]>;
+
 export const scrollChapters = [
   {
     title: "A single, considered whole.",
