@@ -52,17 +52,20 @@ const DraftingMarks = memo(function DraftingMarks() {
 });
 
 export default function Anatomy() {
+  const [selected, setSelected] = useState<AssemblyId | null>(null);
+  const [hovered, setHovered] = useState<AssemblyId | null>(null);
   const {
     container,
     stage,
+    sceneLayer,
+    canvas,
     progress,
     reducedMotion,
     compact,
     staticView,
     seek,
-  } = useExplodedBlueprint();
-  const [selected, setSelected] = useState<AssemblyId | null>(null);
-  const [hovered, setHovered] = useState<AssemblyId | null>(null);
+    webgl,
+  } = useExplodedBlueprint({ selected, hovered });
   const chapter = Math.min(4, Math.floor(progress / 22));
   const focus = assemblies.find((item) => item.id === selected);
   const inspect = (id: AssemblyId) =>
@@ -112,42 +115,45 @@ export default function Anatomy() {
             </p>
           </header>
 
+          <div
+            className={`anatomy-webgl${webgl === "ready" ? " is-ready" : ""}${webgl === "unavailable" ? " is-unavailable" : ""}`}
+            aria-hidden="true"
+          >
+            <canvas ref={canvas} className="anatomy-canvas" />
+          </div>
+          {webgl !== "ready" && (
+            <div className="anatomy-fallback" aria-hidden="true">
+              <BlueprintDrawing part="coachwork" />
+            </div>
+          )}
           <div className="anatomy-camera">
-            <div className="blueprint-shadow" />
             <div
               className="anatomy-scene"
+              ref={sceneLayer}
               role="group"
-              aria-label="Five hand-drawn Auren GT assemblies"
+              aria-label="Five Auren GT assemblies in an exploded three-dimensional study"
             >
-              {/* Painter order also gives a readable assembled fallback without 3D. */}
-              {(
-                [
-                  "suspension",
-                  "chassis",
-                  "powertrain",
-                  "cockpit",
-                  "coachwork",
-                ] as const
-              ).map((id) => {
-                const item = assemblies.find((assembly) => assembly.id === id)!;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    data-part={id}
-                    data-loupe
-                    className={`blueprint-layer${selected === id ? " is-selected" : ""}${hovered === id ? " is-hovered" : ""}`}
-                    aria-label={`Inspect ${item.title}`}
-                    aria-pressed={selected === id}
-                    aria-controls="assembly-insight"
-                    onClick={() => inspect(id)}
-                    onPointerEnter={() => setHovered(id)}
-                    onPointerLeave={() => setHovered(null)}
-                  >
-                    <BlueprintDrawing part={id} />
-                  </button>
-                );
-              })}
+              {assemblies.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  data-part={item.id}
+                  data-anchor={item.id}
+                  data-loupe
+                  className={`blueprint-layer${selected === item.id ? " is-selected" : ""}${hovered === item.id ? " is-hovered" : ""}`}
+                  aria-label={`Inspect ${item.title}`}
+                  aria-pressed={selected === item.id}
+                  aria-controls="assembly-insight"
+                  onClick={() => inspect(item.id)}
+                  onPointerEnter={() => setHovered(item.id)}
+                  onPointerLeave={() => setHovered(null)}
+                >
+                  <span className="anchor-mark" aria-hidden="true">
+                    <span className="anchor-ring" />
+                    <span className="anchor-number">{item.number}</span>
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
           <svg className="blueprint-leaders" aria-hidden="true">
@@ -232,7 +238,9 @@ export default function Anatomy() {
               <span>{scrollChapters[chapter].caption}</span>
               <span className="scroll-cue">
                 {staticView
-                  ? "USE THE DRAWING CONTROLS"
+                  ? compact
+                    ? "USE THE CONTROLS"
+                    : "USE THE DRAWING CONTROLS"
                   : progress > 95
                     ? "CONTINUE TO THE FIELD NOTES ↓"
                     : "SCROLL TO DISASSEMBLE ↓"}

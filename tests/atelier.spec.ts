@@ -191,24 +191,41 @@ test("leaders are attached to transformed SVG anchors throughout the scroll", as
       .evaluate((el) => (el as HTMLElement).style.transform),
   ).not.toBe("translate3d(0px, 0px, 0px)");
   await scrub(page, 65);
+  // Each leader must end exactly on the projected 3D anchor that positions its
+  // numbered marker, measured against the same transform written that frame.
   const error = await page.evaluate(() => {
-    const table = document
-      .querySelector(".anatomy-stage")!
-      .getBoundingClientRect();
     return [...document.querySelectorAll<SVGPathElement>("[data-leader]")].map(
       (path) => {
         const point = path.getPointAtLength(path.getTotalLength());
-        const anchor = document
-          .querySelector(`[data-anchor="${path.dataset.leader}"]`)!
-          .getBoundingClientRect();
+        const layer = document.querySelector<HTMLElement>(
+          `[data-part="${path.dataset.leader}"]`,
+        )!;
         return Math.hypot(
-          point.x - (anchor.left + anchor.width / 2 - table.left),
-          point.y - (anchor.top + anchor.height / 2 - table.top),
+          point.x - Number(layer.dataset.anchorX),
+          point.y - Number(layer.dataset.anchorY),
         );
       },
     );
   });
-  expect(Math.max(...error)).toBeLessThan(1);
+  expect(Math.max(...error)).toBeLessThan(0.2);
+  const viewport = await page.evaluate(() => {
+    const table = document
+      .querySelector(".anatomy-stage")!
+      .getBoundingClientRect();
+    return [
+      ...document.querySelectorAll<HTMLElement>(
+        ".anatomy-scene .blueprint-layer",
+      ),
+    ].every((layer) => {
+      const box = layer.getBoundingClientRect();
+      const x = box.left + box.width / 2;
+      const y = box.top + box.height / 2;
+      return (
+        x > table.left && x < table.right && y > table.top && y < table.bottom
+      );
+    });
+  });
+  expect(viewport).toBe(true);
   const first = await page
     .locator('[data-leader="coachwork"]')
     .getAttribute("d");
