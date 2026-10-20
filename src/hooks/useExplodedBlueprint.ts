@@ -3,20 +3,46 @@ import {
   assemblies,
   separationWindows,
 } from "../components/anatomy/assemblies";
+import type { AssemblyId } from "../components/anatomy/assemblies";
+import type { AnatomyScene } from "../three/anatomyScene";
 
-const clamp = (v: number) => Math.max(0, Math.min(1, v));
-const smoothstep = (v: number) => v * v * (3 - 2 * v);
+const clamp = (value: number) => Math.max(0, Math.min(1, value));
+
+const FALLBACK_ANCHORS: Record<AssemblyId, readonly [number, number]> = {
+  coachwork: [0.42, 0.37],
+  chassis: [0.58, 0.63],
+  powertrain: [0.45, 0.54],
+  cockpit: [0.58, 0.45],
+  suspension: [0.34, 0.69],
+};
 
 /**
- * Native scroll, not scroll-jacking. One rAF per scroll/resize batch drives the
- * five SVG planes, camera, paper grid and leaders. Leaders are projected from
- * the actual transformed SVG anchors, so they stay attached in 3D perspective.
+ * One scroll value drives the whole plate: a damped target feeds the WebGL
+ * camera and the separating assemblies, while the type, leaders and anchors
+ * respond to the exact scroll position so the annotation never lags behind the
+ * mechanical thought. The WebGL chunk is loaded only when the atelier is on
+ * screen; the vector plates carry the page until it arrives.
  */
-export function useExplodedBlueprint() {
+export function useExplodedBlueprint({
+  selected,
+  hovered,
+}: {
+  selected: AssemblyId | null;
+  hovered: AssemblyId | null;
+}) {
   const container = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
+  const propsLayer = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const sceneRef = useRef<AnatomyScene | null>(null);
+  const scheduleRef = useRef<() => void>(() => {});
   const seekRef = useRef<(value: number, immediate?: boolean) => void>(
     () => {},
+  );
+  const selectedRef = useRef<AssemblyId | null>(selected);
+  const hoveredRef = useRef<AssemblyId | null>(hovered);
+  const [webgl, setWebgl] = useState<"loading" | "ready" | "unavailable">(
+    "loading",
   );
   const [settings, setSettings] = useState(() => ({
     reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -25,6 +51,12 @@ export function useExplodedBlueprint() {
   const { reducedMotion, compact } = settings;
   const staticView = reducedMotion || compact;
   const [progress, setProgress] = useState(staticView ? 100 : 0);
+
+  useEffect(() => {
+    selectedRef.current = selected;
+    hoveredRef.current = hovered;
+    scheduleRef.current();
+  }, [selected, hovered]);
 
   useEffect(() => {
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -42,139 +74,173 @@ export function useExplodedBlueprint() {
   useEffect(() => {
     const root = container.current;
     const table = stage.current;
-    if (!root || !table) return;
-    const scene = table.querySelector<HTMLElement>(".anatomy-scene")!;
-    const leaders = table.querySelector<SVGSVGElement>(".blueprint-leaders")!;
-    const gridLine = table.querySelector<SVGPathElement>(".grid-drawing-line");
-    const grid = table.querySelector<HTMLElement>(".draft-grid")!;
-    const shadow = table.querySelector<HTMLElement>(".blueprint-shadow")!;
-    const layers = assemblies.map((item) => ({
-      assembly: item,
-      layer: table.querySelector<HTMLElement>(`[data-part="${item.id}"]`)!,
-      anchor: table.querySelector<SVGCircleElement>(
-        `[data-anchor="${item.id}"]`,
-      )!,
-      label: table.querySelector<HTMLElement>(`[data-callout="${item.id}"]`)!,
+    const layerHost = propsLayer.current;
+    const canvasElement = canvas.current;
+    if (!root || !table || !layerHost || !canvasElement) return;
+
+    const leaders = table.querySelector<SVGSVGElement>(".blueprint-leaders");
+    const grid = table.querySelector<HTMLElement>(".draft-grid");
+    const layers = assemblies.map((assembly) => ({
+      assembly,
+      layer: table.querySelector<HTMLElement>(`[data-part="${assembly.id}"]`),
+      callout: table.querySelector<HTMLElement>(
+        `[data-callout="${assembly.id}"]`,
+      ),
       leader: table.querySelector<SVGPathElement>(
-        `[data-leader="${item.id}"]`,
-      )!,
+        `[data-leader="${assembly.id}"]`,
+      ),
       dot: table.querySelector<SVGCircleElement>(
-        `[data-leader-dot="${item.id}"]`,
-      )!,
+        `[data-leader-dot="${assembly.id}"]`,
+      ),
     }));
+
     let raf = 0;
-    let manual = staticView ? 1 : 0;
-    let previous = -1;
     let alive = true;
+    let visible = true;
+    let manual = staticView ? 1 : 0;
+    let current = staticView ? 1 : 0;
+    let lastTime = 0;
+    let lastRounded = -1;
+    let scene: AnatomyScene | null = null;
+    const pointer = { x: 0, y: 0 };
+    const pointerTarget = { x: 0, y: 0 };
 
     const metrics = () => ({
       start: root.getBoundingClientRect().top + scrollY - 72,
       travel: Math.max(1, root.offsetHeight - table.offsetHeight),
     });
-    const render = () => {
+
+    const render = (now: number) => {
       raf = 0;
+      if (!alive) return;
       const { start, travel } = metrics();
-      const p = staticView ? manual : clamp((scrollY - start) / travel);
-      const e = smoothstep(p);
-      const width = table.clientWidth;
-      const spread = Math.max(
-        0.45,
-        Math.min(
-          0.78,
-          Math.max(0.62, width / 1500),
-          (table.clientHeight - 300) / 600,
-        ),
-      );
-      // Translate a cached grid texture; do not repaint a full-screen gradient
-      // or cascade changing custom properties through thousands of SVG nodes.
-      grid.style.transform = `translate3d(${(e * 18).toFixed(2)}px, ${(e * -24).toFixed(2)}px, 0)`;
-      shadow.style.opacity = (1 - p * 0.85).toFixed(3);
-      table.dataset.progress = p.toFixed(4);
-      scene.style.transform = staticView
-        ? "translate(-50%, -50%)"
-        : `translate(-50%, -50%) rotateX(${(7 - e * 10).toFixed(2)}deg) rotateY(${(-13 + e * 23).toFixed(2)}deg) rotateZ(${(-4 + e * 5).toFixed(2)}deg)`;
-      layers.forEach(({ assembly, layer, label }) => {
-        const [separationStart, separationEnd] =
-          separationWindows[assembly.id];
-        const t = smoothstep(
-          clamp(
-            (p - separationStart) / (separationEnd - separationStart),
-          ),
-        );
-        const labelStart = Math.max(0, separationStart - 0.025);
-        const labelReveal = staticView
-          ? 1
-          : clamp((p - labelStart) / (separationEnd - labelStart));
-        label.style.opacity = (0.68 + labelReveal * 0.32).toFixed(3);
-        const [baseX, baseY, z] = assembly.offset;
-        // Wider sheets need extra clearance under the full-size coachwork.
-        // On phones the smaller drawing already leaves those layers exposed.
-        const wide = clamp((width - 600) / 500);
-        const x = baseX + (assembly.id === "cockpit" ? 30 * wide : 0);
-        const y =
-          baseY +
-          (assembly.id === "coachwork"
-            ? -75 * wide
-            : assembly.id === "cockpit"
-              ? 80 * wide
-              : 0);
-        layer.style.transform = `translate3d(${(x * t * spread).toFixed(2)}px, ${(y * t * spread).toFixed(2)}px, ${staticView ? 0 : (z * t * spread).toFixed(2)}px)`;
-      });
-      // Batch ALL geometry reads before writing any leader paths. Interleaving
-      // these reads/writes would force five SVG layouts on every scroll frame.
+      const raw = staticView ? manual : clamp((scrollY - start) / travel);
+      if (!lastTime) lastTime = now;
+      const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
+      lastTime = now;
+      const chase = staticView ? 1 : 1 - Math.exp(-dt * 4.6);
+      current += (raw - current) * chase;
+      if (Math.abs(raw - current) < 0.0006) current = raw;
+      const pointerChase = 1 - Math.exp(-dt * 3.4);
+      pointer.x += (pointerTarget.x - pointer.x) * pointerChase;
+      pointer.y += (pointerTarget.y - pointer.y) * pointerChase;
+
+      if (scene)
+        scene.render({
+          progress: current,
+          calm: staticView,
+          pointer,
+          selected: selectedRef.current,
+          hovered: hoveredRef.current,
+        });
+
       const bounds = table.getBoundingClientRect();
-      const projection = layers.map(
-        ({ assembly, anchor, label, leader, dot }) => {
-          const a = anchor.getBoundingClientRect();
-          const b = label.getBoundingClientRect();
-          return {
-            assembly,
-            leader,
-            dot,
-            x: a.left + a.width / 2 - bounds.left,
-            y: a.top + a.height / 2 - bounds.top,
-            fromX: (assembly.side === "left" ? b.right : b.left) - bounds.left,
-            fromY: b.top + b.height / 2 - bounds.top,
-          };
-        },
-      );
-      const viewBox = `0 0 ${bounds.width} ${bounds.height}`;
-      if (leaders.getAttribute("viewBox") !== viewBox)
-        leaders.setAttribute("viewBox", viewBox);
-      projection.forEach(({ assembly, leader, dot, x, y, fromX, fromY }) => {
-        const elbowX = fromX + (assembly.side === "left" ? 24 : -24);
-        leader.setAttribute(
-          "d",
-          `M${fromX.toFixed(1)} ${fromY.toFixed(1)} H${elbowX.toFixed(1)} L${x.toFixed(1)} ${y.toFixed(1)}`,
-        );
-        const [separationStart, separationEnd] =
-          separationWindows[assembly.id];
-        const leaderStart = Math.max(0, separationStart - 0.025);
-        const draw = staticView
-          ? 1
-          : clamp((p - leaderStart) / (separationEnd - leaderStart));
-        leader.style.strokeDashoffset = (1 - draw).toFixed(4);
-        dot.setAttribute("cx", x.toFixed(1));
-        dot.setAttribute("cy", y.toFixed(1));
-        dot.style.opacity = draw.toFixed(3);
+      const width = bounds.width;
+      const height = bounds.height;
+      const scale = 1.006 + Math.min(1, Math.max(0, raw)) * 0.014;
+      const centreX = width / 2;
+      const centreY = height / 2;
+      layerHost.style.transform = `scale(${scale.toFixed(5)})`;
+      layerHost.style.transformOrigin = "50% 50%";
+
+      const projected = scene?.anchors();
+      const points = {} as Record<AssemblyId, { x: number; y: number }>;
+      Object.entries(FALLBACK_ANCHORS).forEach(([id, [fx, fy]]) => {
+        points[id as AssemblyId] = { x: fx * width, y: fy * height };
       });
-      if (gridLine) gridLine.style.strokeDashoffset = (1 - p).toFixed(4);
-      const rounded = Math.round(p * 100);
-      if (rounded !== previous) {
-        previous = rounded;
+      if (projected)
+        (Object.keys(projected) as AssemblyId[]).forEach((id) => {
+          points[id] = projected[id];
+        });
+
+      layers.forEach(({ assembly, layer, callout }) => {
+        const reveal = staticView
+          ? 1
+          : clamp(
+              (raw - separationWindows[assembly.id][0] + 0.06) /
+                (separationWindows[assembly.id][1] -
+                  separationWindows[assembly.id][0] +
+                  0.06),
+            );
+        const point = points[assembly.id];
+        const x = centreX + (point.x - centreX) / scale;
+        const y = centreY + (point.y - centreY) / scale;
+        if (layer) {
+          layer.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+          layer.style.setProperty("--reveal", reveal.toFixed(3));
+          // The projected (screen-space) anchor, before the sheet's own scale.
+          layer.dataset.anchorX = point.x.toFixed(2);
+          layer.dataset.anchorY = point.y.toFixed(2);
+        }
+        if (callout) callout.style.opacity = (0.68 + reveal * 0.32).toFixed(3);
+      });
+
+      // Leaders are drawn from the live controls to the live anchors.
+      if (leaders) {
+        const viewBox = `0 0 ${width} ${height}`;
+        if (leaders.getAttribute("viewBox") !== viewBox)
+          leaders.setAttribute("viewBox", viewBox);
+        layers.forEach(({ assembly, callout, leader, dot }) => {
+          if (!leader || !dot || !callout) return;
+          // Use the same numbers that positioned the anchor this frame; a layout
+          // read here could report a stale box while scrolling.
+          const { x, y } = points[assembly.id];
+          const calloutBox = callout.getBoundingClientRect();
+          const fromX =
+            (assembly.side === "left" ? calloutBox.right : calloutBox.left) -
+            bounds.left;
+          const fromY = calloutBox.top + calloutBox.height / 2 - bounds.top;
+          const elbow = fromX + (assembly.side === "left" ? 26 : -26);
+          leader.setAttribute(
+            "d",
+            `M${fromX.toFixed(1)} ${fromY.toFixed(1)} H${elbow.toFixed(1)} L${x.toFixed(1)} ${y.toFixed(1)}`,
+          );
+          const [startWindow, endWindow] = separationWindows[assembly.id];
+          const leaderStart = Math.max(0, startWindow - 0.02);
+          const draw = staticView
+            ? 1
+            : clamp((raw - leaderStart) / (endWindow - leaderStart));
+          leader.style.strokeDashoffset = (1 - draw).toFixed(4);
+          dot.setAttribute("cx", x.toFixed(1));
+          dot.setAttribute("cy", y.toFixed(1));
+          dot.style.opacity = draw.toFixed(3);
+        });
+      }
+
+      if (grid)
+        grid.style.transform = `translate3d(${(raw * 18).toFixed(2)}px, ${(raw * -24).toFixed(2)}px, 0)`;
+      table.dataset.progress = raw.toFixed(4);
+
+      const rounded = Math.round(raw * 100);
+      if (rounded !== lastRounded) {
+        lastRounded = rounded;
         setProgress(rounded);
       }
+
+      const pointerBusy =
+        Math.abs(pointerTarget.x - pointer.x) +
+          Math.abs(pointerTarget.y - pointer.y) >
+        0.001;
+      const unsettled =
+        Math.abs(raw - current) > 0.0005 || pointerBusy || !lastTime;
+      if (visible && unsettled) raf = requestAnimationFrame(render);
     };
+
     const schedule = () => {
-      if (alive && !raf) raf = requestAnimationFrame(render);
+      if (!alive || !visible) return;
+      if (visible) lastTime = 0;
+      if (!raf) raf = requestAnimationFrame(render);
     };
+    scheduleRef.current = schedule;
+
     seekRef.current = (value, immediate = false) => {
       const target = clamp(value / 100);
-      // A controlled range must not spring back to its old value while the
-      // browser is delivering the resulting scroll/paint event.
       if (staticView || immediate) setProgress(Math.round(target * 100));
       if (staticView) {
         manual = target;
+        current = target;
+        pointerTarget.x = 0;
+        pointerTarget.y = 0;
         schedule();
       } else {
         const { start, travel } = metrics();
@@ -184,34 +250,106 @@ export function useExplodedBlueprint() {
         });
       }
     };
-    const observer = new ResizeObserver(schedule);
+
+    const onPointer = (event: PointerEvent) => {
+      if (staticView || event.pointerType !== "mouse") return;
+      const bounds = table.getBoundingClientRect();
+      pointerTarget.x = clamp(
+        ((event.clientX - bounds.left) / Math.max(1, bounds.width)) * 2 - 1,
+      );
+      pointerTarget.y = clamp(
+        ((event.clientY - bounds.top) / Math.max(1, bounds.height)) * 2 - 1,
+      );
+      schedule();
+    };
+    const onLeave = () => {
+      pointerTarget.x = 0;
+      pointerTarget.y = 0;
+      schedule();
+    };
+
+    const observer = new ResizeObserver(() => {
+      scene?.resize();
+      schedule();
+    });
     observer.observe(root);
     observer.observe(table);
+
+    const visibility =
+      "IntersectionObserver" in window
+        ? new IntersectionObserver(
+            (entries) => {
+              visible = entries.some((entry) => entry.isIntersecting);
+              if (visible) schedule();
+            },
+            { rootMargin: "10% 0px" },
+          )
+        : null;
+    visibility?.observe(table);
+
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("pointermove", onPointer, { passive: true });
+    document.addEventListener("pointerleave", onLeave);
     document.fonts.ready.then(schedule);
-    render();
+
+    import("../three/anatomyScene")
+      .then(({ createAnatomyScene }) => {
+        if (!alive) return;
+        try {
+          scene = createAnatomyScene(canvasElement);
+          sceneRef.current = scene;
+          scene.resize();
+          table.dataset.webgl = "on";
+          setWebgl("ready");
+        } catch {
+          table.dataset.webgl = "off";
+          setWebgl("unavailable");
+        }
+        schedule();
+      })
+      .catch(() => {
+        if (!alive) return;
+        table.dataset.webgl = "off";
+        setWebgl("unavailable");
+        schedule();
+      });
+
+    schedule();
+
     return () => {
       alive = false;
       cancelAnimationFrame(raf);
       observer.disconnect();
+      visibility?.disconnect();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
+      window.removeEventListener("pointermove", onPointer);
+      document.removeEventListener("pointerleave", onLeave);
+      scene?.dispose();
+      scene = null;
+      sceneRef.current = null;
+      scheduleRef.current = () => {};
       seekRef.current = () => {};
     };
+    // staticView changes how the timeline is driven, not which DOM is observed.
   }, [staticView]);
 
   const seek = useCallback(
     (value: number, immediate = false) => seekRef.current(value, immediate),
     [],
   );
+
   return {
     container,
     stage,
+    sceneLayer: propsLayer,
+    canvas,
     progress,
     reducedMotion,
     compact,
     staticView,
     seek,
+    webgl,
   };
 }

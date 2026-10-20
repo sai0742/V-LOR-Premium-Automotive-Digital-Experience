@@ -211,5 +211,12 @@ test("the final technical illustration scrubs forward and reverses with native s
   const assembled = await page
     .locator('[data-part="coachwork"]')
     .evaluate((el) => (el as HTMLElement).style.transform);
-  expect(assembled).toContain("translate3d(0px, 0px, 0px)");
+  // The annotation rides a projected WebGL anchor, so "assembled" is a
+  // different point in the plate rather than a reset to the origin.
+  expect(assembled).toMatch(/translate3d\(-?[\d.]+px, -?[\d.]+px, 0px\)/);
+  expect(assembled).not.toBe(exploded);
+  for (const marker of await page
+    .locator(".anatomy-scene .blueprint-layer")
+    .all())
+    await expect(marker).toBeInViewport();
 });
